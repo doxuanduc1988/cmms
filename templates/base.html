@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CMMS System{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Bootstrap 5 (for grid and utilities) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    {% block extra_css %}{% endblock %}
+    <style>
+        .sidebar-brand {
+            padding: 30px 24px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .sidebar-user {
+            margin: 20px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* Embedded Mode Styles */
+        body.is-embedded .sidebar,
+        body.is-embedded .top-nav,
+        body.is-embedded footer,
+        body.is-embedded #tb2-chat-wrapper,
+        body.is-embedded #tb2-chat-popup {
+            display: none !important;
+        }
+        body.is-embedded .main-layout {
+            margin-left: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            min-height: auto !important;
+        }
+        body.is-embedded .page-container {
+            padding: 15px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+        body.is-embedded {
+            background-color: transparent !important;
+        }
+    </style>
+</head>
+
+<body class="{% if request.args.get('embed') %}is-embedded{% endif %}">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand py-4 px-4">
+            <h2 class="h5 fw-bold mb-0 text-primary"><i class="fas fa-layer-group me-2"></i>CMMS <span
+                    class="text-white">TB2</span></h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="bg-primary text-white rounded-2 d-flex align-items-center justify-content-center"
+                style="width: 40px; height: 40px; min-width: 40px; font-weight: 700;">
+                {{ session.username[0].upper() if session.username else 'U' }}
+            </div>
+            <div class="overflow-hidden">
+                <div class="fw-bold small text-truncate">{{ session.full_name or session.username }}</div>
+                <div class="text-muted small text-truncate" style="font-size: 10px;">{{ session.role_name or 'Chưa phân vai' }}</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <div class="menu-label">Main Navigation</div>
+            <a href="/dashboard" class="menu-item {% if request.path == '/dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i>
+                <span>Bảng điều khiển</span>
+            </a>
+
+            <div class="menu-label">Operations</div>
+            <a href="/dashboard/hr"
+                class="menu-item {% if '/hr' in request.path or '/employees' in request.path %}active{% endif %}">
+                <i class="fas fa-user-group"></i>
+                <span>Nhân sự & Hồ sơ</span>
+            </a>
+
+            <a href="/dashboard/attendance" class="menu-item {% if '/attendance' in request.path %}active{% endif %}">
+                <i class="fas fa-calendar-check"></i>
+                <span>Chấm công & Phê duyệt</span>
+            </a>
+
+            <a href="/estimation/" class="menu-item {% if '/estimation' in request.path %}active{% endif %}">
+                <i class="fas fa-calculator"></i>
+                <span>Dự toán Chi phí</span>
+            </a>
+
+            <a href="/procurement/" class="menu-item {% if '/procurement' in request.path %}active{% endif %}">
+                <i class="fas fa-cart-shopping"></i>
+                <span>Mua sắm - Đấu thầu</span>
+            </a>
+
+            <div class="menu-label">System Management</div>
+            <a href="/dashboard/accounts"
+                class="menu-item {% if '/accounts' in request.path or '/roles' in request.path %}active{% endif %}">
+                <i class="fas fa-shield-halved"></i>
+                <span>Hệ thống & Quyền</span>
+            </a>
+
+            <a href="/procurement/logs" class="menu-item {% if '/procurement/logs' in request.path %}active{% endif %}">
+                <i class="fas fa-list-check"></i>
+                <span>Nhật ký thao tác</span>
+            </a>
+        </nav>
+
+        <div class="p-4 mt-auto">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary w-100 justify-content-center text-danger">
+                <i class="fas fa-sign-out-alt"></i> Thoát hệ thống
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Layout -->
+    <main class="main-layout">
+        <header class="top-nav">
+            <div class="d-flex align-items-center">
+                <h4 class="mb-0 fw-bold text-dark">{% block breadcrumb %}Dashboard{% endblock %}</h4>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="dropdown">
+                    <a href="#" class="text-decoration-none" data-bs-toggle="dropdown">
+                        <img src="{{ url_for('static', filename='images/default_avatar.png') }}" class="rounded-3"
+                            style="width: 36px; height: 36px; object-fit: cover;">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2" style="min-width: 200px;">
+                        <li><a class="dropdown-item rounded-2 py-2"
+                                href="{{ url_for('account.change_own_password') }}"><i
+                                    class="fas fa-key me-2 text-muted"></i> Đổi mật khẩu</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item rounded-2 py-2 text-danger" href="{{ url_for('auth.logout') }}"><i
+                                    class="fas fa-sign-out-alt me-2"></i> Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <section class="page-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1060;">
+                {% for category, message in messages %}
+                    {% if category != 'danger' and category != 'error' %}
+                    <div class="toast show align-items-center text-white bg-{{ 'success' if category == 'success' else 'info' }} border-0 shadow-lg mb-2"
+                        role="alert" aria-live="assertive" aria-atomic="true"
+                        style="border-radius: 12px; min-width: 300px;">
+                        <div class="d-flex">
+                            <div class="toast-body d-flex align-items-center gap-2">
+                                <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-info{% endif %} fs-5"></i>
+                                <div>{{ message }}</div>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                                aria-label="Close"></button>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Xử lý riêng thông báo lỗi bằng window.alert của trình duyệt -->
+            <script>
+                {% for category, message in messages %}
+                    {% if category == 'danger' or category == 'error' %}
+                        // Lọc bỏ HTML tags (nếu có) để hiển thị trong alert
+                        (function() {
+                            var temp = document.createElement("div");
+                            temp.innerHTML = '{{ message | safe }}';
+                            var plainText = temp.textContent || temp.innerText || "";
+                            alert(plainText);
+                        })();
+                    {% endif %}
+                {% endfor %}
+            </script>
+            {% endif %}
+            {% endwith %}
+
+            <script>
+                // Tự động đóng Toast thông thường sau 5 giây
+                document.addEventListener('DOMContentLoaded', function () {
+                    const toasts = document.querySelectorAll('.toast');
+                    toasts.forEach(toast => {
+                        setTimeout(() => {
+                            const bsToast = new bootstrap.Toast(toast);
+                            toast.classList.remove('show');
+                            setTimeout(() => toast.remove(), 500); // Đợi hiệu ứng fade out rồi xoá hẳn
+                        }, 5000);
+                    });
+                });
+            </script>
+
+            {% block content %}{% endblock %}
+        </section>
+
+        <footer class="mt-auto py-4 px-5 text-muted small d-flex justify-content-between align-items-center">
+            <div>© 2026 Bản quyền thuộc về <b>Nhà máy Nhiệt điện Thái Bình 2</b></div>
+        </footer>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Tự động phát hiện iframe để ẩn header/sidebar (Tránh lặp giao diện)
+        if (window.self !== window.top) {
+            document.body.classList.add('is-embedded');
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+
+    <!-- Chatbot Widget Wrapper for synchronized floating -->
+    <div id="tb2-chat-wrapper">
+        <div id="tb2-chat-btn" title="Hỗ trợ trực tuyến">
+            <i class="fas fa-comment-dots"></i>
+        </div>
+
+        <!-- Tooltip bubble above chat button -->
+        <div id="tb2-chat-bubble">
+            <span id="tb2-bubble-text">💬 Tôi có thể giúp gì cho bạn?</span>
+            <div id="tb2-bubble-arrow"></div>
+        </div>
+    </div>
+
+    <div id="tb2-chat-popup">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="chat-header-title">
+                    <i class="fas fa-robot me-2"></i> Trợ lý AI TB2
+                </div>
+                <div class="chat-header-sub">
+                    <span class="chat-status-dot"></span> Đã kết nối · Gemma 4 RAG
+                </div>
+            </div>
+            <div id="tb2-chat-close">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+
+        <!-- Welcome banner (only shown on auto-open) -->
+        <div id="tb2-welcome-banner">
+            <div class="welcome-avatar"><i class="fas fa-robot"></i></div>
+            <div class="welcome-body">
+                <p class="welcome-greeting">Xin chào! Tôi là Trợ lý AI của <strong>Nhà máy Nhiệt điện Thái Bình
+                        2</strong> 👋</p>
+                <p class="welcome-desc">Tôi có thể hỗ trợ bạn về:</p>
+                <ul class="welcome-topics">
+                    <li><i class="fas fa-users"></i> <strong>Thông tin nhân sự</strong> </li>
+                    <li><i class="fas fa-cart-shopping"></i> <strong>Quy trình mua sắm</strong> </li>
+                    <li><i class="fas fa-file-alt"></i> <strong>Quy định nội bộ</strong> </li>
+                    <li><i class="fas fa-circle-info"></i> <strong>Thông tin chung</strong> </li>
+                </ul>
+                <button id="tb2-welcome-close" class="welcome-btn">Bắt đầu hỏi <i
+                        class="fas fa-arrow-right ms-1"></i></button>
+            </div>
+        </div>
+
+        <iframe id="tb2-chat-iframe" src="https://thaibinh2.vn/chat/psUjx5BnGZ8Vp6qa" allow="microphone"></iframe>
+    </div>
+
+    <style>
+        /* Floating Wrapper */
+        #tb2-chat-wrapper {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            animation: float 3s ease-in-out infinite;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        /* Chat Button */
+        #tb2-chat-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        #tb2-chat-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.6);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* Tooltip bubble */
+        #tb2-chat-bubble {
+            position: absolute;
+            bottom: 75px;
+            right: 0;
+            background: linear-gradient(135deg, #ffffff, #f0f9ff);
+            color: #1e3a8a;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 12px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(37, 99, 235, 0.15), 0 0 20px rgba(37, 99, 235, 0.1);
+            z-index: 9998;
+            min-width: 260px;
+            width: max-content;
+            max-width: 350px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px) scale(0.9);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            border: 2px solid #3b82f6;
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #tb2-chat-bubble.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            animation: bubble-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), bubble-pulse 2s infinite;
+        }
+
+        @keyframes bubble-pop {
+            0% { transform: translateY(12px) scale(0.8); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes bubble-pulse {
+            0% { box-shadow: 0 10px 40px rgba(37, 99, 235, 0.15), 0 0 0px rgba(37, 99, 235, 0.2); }
+            50% { box-shadow: 0 10px 40px rgba(37, 99, 235, 0.25), 0 0 15px rgba(37, 99, 235, 0.4); }
+            100% { box-shadow: 0 10px 40px rgba(37, 99, 235, 0.15), 0 0 0px rgba(37, 99, 235, 0.2); }
+        }
+
+        #tb2-bubble-arrow {
+            position: absolute;
+            bottom: -9px;
+            right: 22px;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-right: 2px solid #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+            transform: rotate(45deg);
+        }
+
+        /* Chat Popup */
+        #tb2-chat-popup {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 400px;
+            height: 600px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10000;
+            overflow: hidden;
+        }
+
+        #tb2-chat-popup.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .chat-header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .chat-header-title {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .chat-header-sub {
+            font-size: 11px;
+            opacity: 0.82;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chat-status-dot {
+            width: 7px;
+            height: 7px;
+            background: #4ade80;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 0 5px rgba(74, 222, 128, 0.1);
+            }
+        }
+
+        /* Close Button */
+        #tb2-chat-close {
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        #tb2-chat-close:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: rotate(90deg);
+        }
+
+        /* Welcome banner */
+        #tb2-welcome-banner {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-bottom: 1px solid #bfdbfe;
+            flex-shrink: 0;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #tb2-welcome-banner.hidden {
+            display: none;
+        }
+
+        .welcome-avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .welcome-body {
+            flex: 1;
+        }
+
+        .welcome-greeting {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e3a8a;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .welcome-desc {
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .welcome-topics {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 10px 0;
+        }
+
+        .welcome-topics li {
+            font-size: 12px;
+            color: #334155;
+            padding: 3px 0;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .welcome-topics li i {
+            color: #2563eb;
+            width: 14px;
+            text-align: center;
+        }
+
+        .welcome-btn {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 7px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .welcome-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* iframe */
+        #tb2-chat-iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #f8fafc;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            #tb2-chat-popup {
+                bottom: 0;
+                right: 0;
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+
+            #tb2-chat-btn {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            #tb2-chat-bubble {
+                right: 14px;
+                bottom: 90px;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chatBtn       = document.getElementById('tb2-chat-btn');
+            const chatPopup     = document.getElementById('tb2-chat-popup');
+            const chatClose     = document.getElementById('tb2-chat-close');
+            const chatBubble    = document.getElementById('tb2-chat-bubble');
+            const welcomeBanner = document.getElementById('tb2-welcome-banner');
+            const welcomeClose  = document.getElementById('tb2-welcome-close');
+            const chatIframe    = document.getElementById('tb2-chat-iframe');
+
+            // sessionStorage key – tồn tại trong 1 phiên trình duyệt (tab/window)
+            const SESSION_KEY = 'tb2_chat_dismissed';
+
+            function isDismissed() {
+                return sessionStorage.getItem(SESSION_KEY) === '1';
+            }
+
+            function markDismissed() {
+                sessionStorage.setItem(SESSION_KEY, '1');
+            }
+
+
+            function hideBubble() {
+                chatBubble.classList.remove('show');
+            }
+
+            // Mở / đóng popup
+            function openChat(fromAuto) {
+                chatPopup.classList.add('show');
+                chatBtn.style.animation = 'none';
+                hideBubble();
+                // Chỉ hiện welcome banner khi auto-open
+                if (fromAuto) {
+                    welcomeBanner.classList.remove('hidden');
+                } else {
+                    welcomeBanner.classList.add('hidden');
+                }
+            }
+
+            function closeChat() {
+                chatPopup.classList.remove('show');
+                chatBtn.style.animation = 'float 3s ease-in-out infinite';
+                markDismissed(); // Đánh dấu đã tắt → không tự mở lại trong phiên này
+            }
+
+            // Nút chat (mở thủ công, không bị hạn chế bởi session)
+            chatBtn.addEventListener('click', function () {
+                if (chatPopup.classList.contains('show')) {
+                    closeChat();
+                } else {
+                    openChat(false);
+                }
+            });
+
+            // Nút đóng (X)
+            chatClose.addEventListener('click', closeChat);
+
+            // Nút "Bắt đầu hỏi" trong welcome banner
+            welcomeClose.addEventListener('click', function () {
+                welcomeBanner.style.transition = 'opacity 0.3s';
+                welcomeBanner.style.opacity = '0';
+                setTimeout(() => {
+                    welcomeBanner.classList.add('hidden');
+                    welcomeBanner.style.opacity = '';
+                }, 300);
+            });
+
+            // ── Suggestion logic (thỉnh thoảng hiện câu mời gọi) ──
+            const invitingMessages = [
+                "💬 Bạn cần hỏi về thông tin nhân sự?",
+                "🛒 Tìm hiểu về quy định mua sắm tại đây.",
+                "⚙️ Hỏi tôi về quy trình vận hành nhà máy.",
+                "📜 Bạn có thắc mắc về nội quy công ty?",
+                "🤖 Tôi là trợ lý AI, rất vui được hỗ trợ bạn!"
+            ];
+            let msgIndex = 0;
+
+            function showNextSuggestion() {
+                if (!chatPopup.classList.contains('show')) {
+                    const textEl = document.getElementById('tb2-bubble-text');
+                    
+                    // Chọn ngẫu nhiên một câu khác với câu hiện tại
+                    let newIndex;
+                    do {
+                        newIndex = Math.floor(Math.random() * invitingMessages.length);
+                    } while (newIndex === msgIndex && invitingMessages.length > 1);
+                    
+                    msgIndex = newIndex;
+                    if (textEl) textEl.innerText = invitingMessages[msgIndex];
+                    
+                    chatBubble.classList.add('show');
+                    
+                    setTimeout(() => {
+                        chatBubble.classList.remove('show');
+                    }, 8000); // Hiện lâu hơn chút (8s)
+                }
+            }
+
+            // Lần đầu hiện sau 5 giây
+            setTimeout(showNextSuggestion, 5000);
+
+            // Sau đó cứ mỗi 30 giây lại hiện 1 câu khác
+            setInterval(showNextSuggestion, 30000);
+        });
+    </script>
+</body>
+
+</html>

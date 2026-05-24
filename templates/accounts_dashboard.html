@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Tài khoản & Quyền{% endblock %}
+{% block breadcrumb %}Hệ thống{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold">Quản trị Hệ thống</h2>
+    <p class="text-muted">Quản lý người dùng, vai trò, modules và nhật ký hệ thống.</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-6 col-md-4 col-lg-3">
+        <a href="/employees" class="action-card">
+            <i class="fas fa-user action-icon text-info"></i>
+            <h6 class="action-title">Tài khoản người dùng</h6>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+        <a href="/roles" class="action-card">
+            <i class="fas fa-user-tag action-icon text-info"></i>
+            <h6 class="action-title">Vai trò & Quyền</h6>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-3">
+        <a href="/audit/logs" class="action-card">
+            <i class="fas fa-clipboard-list action-icon text-danger"></i>
+            <h6 class="action-title">Nhật ký thao tác</h6>
+        </a>
+    </div>
+</div>
+{% endblock %}

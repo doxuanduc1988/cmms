@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Chỉnh sửa Chức danh Công việc{% endblock %}
+{% block breadcrumb %}Nhân sự / Chức danh / Chỉnh sửa{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h3 class="fw-bold mb-0"><i class="fas fa-edit me-2 text-warning"></i>Sửa chức danh công việc</h3>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <div class="alert alert-info border-0 shadow-sm mb-4">
+            <i class="fas fa-info-circle me-2"></i> Đang chỉnh sửa chức danh: <strong>{{ position.JobPositionCode }}</strong>
+        </div>
+
+        <form method="POST" action="{{ url_for('job_positions.edit_job_position', position_id=position.JobPositionID) }}">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Mã chức danh</label>
+                    <input type="text" name="job_position_code" class="form-control shadow-sm" value="{{ position.JobPositionCode }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Tên chức danh</label>
+                    <input type="text" name="job_position_name" class="form-control shadow-sm" value="{{ position.JobPositionName }}" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Mô tả</label>
+                    <textarea name="description" rows="4" class="form-control shadow-sm">{{ position.Description or '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fas fa-save me-1"></i> Cập nhật
+                </button>
+                <a href="{{ url_for('job_positions.list_job_positions') }}" class="btn btn-light px-4 border shadow-sm">
+                    <i class="fas fa-times me-1"></i> Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

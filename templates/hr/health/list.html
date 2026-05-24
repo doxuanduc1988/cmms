@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Thông tin sức khỏe - {{ employee_id }}{% endblock %}
+{% block breadcrumb %}Nhân sự / Tra cứu sức khỏe / {{ employee_id }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h3 class="fw-bold mb-0">Hồ sơ sức khỏe: <span class="text-primary">{{ employee_id }}</span></h3>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('health_index.search_health') }}" class="btn btn-secondary shadow-sm">
+            <i class="fas fa-search me-1"></i> Tra cứu khác
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="fw-bold mb-0"><i class="fas fa-history me-2 text-info"></i>Lịch sử khám sức khỏe</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th class="ps-4">STT</th>
+                        <th>Ngày khám</th>
+                        <th>Chiều cao</th>
+                        <th>Cân nặng</th>
+                        <th>Nhóm máu</th>
+                        <th>Sức khỏe</th>
+                        <th>Phiếu khám</th>
+                        <th>Ghi chú</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                    <tr>
+                        <td class="ps-4 text-muted small">{{ loop.index }}</td>
+                        <td class="fw-bold">{{ r.CheckDate.strftime('%d/%m/%Y') if r.CheckDate else '' }}</td>
+                        <td>{{ r.Height }} cm</td>
+                        <td>{{ r.Weight }} kg</td>
+                        <td><span class="badge bg-danger-soft text-danger">{{ r.BloodType }}</span></td>
+                        <td>{{ r.HealthStatus }}</td>
+                        <td>
+                            {% if r.AttachmentFile %}
+                            <a href="{{ url_for('static', filename='uploads/health_docs/' ~ r.AttachmentFile) }}" target="_blank" class="btn btn-link btn-sm text-decoration-none">
+                                <i class="fas fa-paperclip me-1"></i> Xem file
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">Không có</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ r.DoctorNotes }}</td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group">
+                                {% if has_permission('hr', 'update') %}
+<a href="{{ url_for('hr_health.edit_health', employee_id=employee_id, health_id=r.HealthID) }}" class="btn btn-secondary btn-sm" title="Sửa">
+                                    <i class="fas fa-edit text-warning"></i>
+                                </a>
+{% else %}
+<button disabled class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền sửa">
+                                    <i class="fas fa-edit text-secondary"></i>
+                                </button>
+{% endif %}
+                                {% if has_permission('hr', 'delete') %}
+<form action="{{ url_for('hr_health.delete_health', employee_id=employee_id, health_id=r.HealthID) }}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xoá bản ghi sức khỏe này?');">
+                                    <button type="submit" class="btn btn-secondary btn-sm" title="Xoá">
+                                        <i class="fas fa-trash text-danger"></i>
+                                    </button>
+                                </form>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền xóa" type="submit" class="btn btn-secondary btn-sm" title="Xoá">
+                                        <i class="fas fa-trash text-secondary"></i>
+                                    </button>
+{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">Chưa có dữ liệu lịch sử sức khỏe</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="fw-bold mb-0">
+            <i class="fas {{ 'fa-edit text-warning' if mode == 'edit' else 'fa-plus-circle text-primary' }} me-2"></i>
+            {{ 'Sửa thông tin sức khỏe' if mode == 'edit' else 'Cập nhật thông tin sức khỏe mới' }}
+        </h5>
+    </div>
+    <div class="card-body p-4 border-top">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Ngày khám</label>
+                    <input type="date" name="CheckDate" class="form-control shadow-sm" value="{{ record.CheckDate.strftime('%Y-%m-%d') if mode == 'edit' and record.CheckDate else '' }}" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Chiều cao (cm)</label>
+                    <input type="number" step="0.1" name="Height" class="form-control shadow-sm" value="{{ record.Height if mode == 'edit' else '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Cân nặng (kg)</label>
+                    <input type="number" step="0.1" name="Weight" class="form-control shadow-sm" value="{{ record.Weight if mode == 'edit' else '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Nhóm máu</label>
+                    <input type="text" name="BloodType" class="form-control shadow-sm" value="{{ record.BloodType if mode == 'edit' else '' }}" placeholder="VD: A, B, O, AB...">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Tình trạng sức khỏe chung</label>
+                    <input type="text" name="HealthStatus" class="form-control shadow-sm" value="{{ record.HealthStatus if mode == 'edit' else '' }}" placeholder="VD: Tốt, Bình thường...">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Bệnh nền / Tiền sử y tế</label>
+                    <textarea name="MedicalConditions" class="form-control shadow-sm" rows="3" placeholder="Nhập các bệnh nền nếu có...">{{ record.MedicalConditions if mode == 'edit' else '' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Ghi chú từ bác sĩ / Kết luận</label>
+                    <textarea name="DoctorNotes" class="form-control shadow-sm" rows="3" placeholder="Ghi chú chi tiết từ bác sĩ...">{{ record.DoctorNotes if mode == 'edit' else '' }}</textarea>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">File phiếu khám / Kết quả xét nghiệm (PDF, Ảnh...)</label>
+                    <input type="file" name="AttachmentFile" class="form-control shadow-sm">
+                    {% if record and record.AttachmentFile %}
+                    <div class="mt-2 small text-muted">
+                        <i class="fas fa-file-alt me-1"></i> Đã lưu: <span class="text-primary">{{ record.AttachmentFile }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fas fa-save me-1"></i> Lưu thông tin
+                </button>
+                {% if mode == 'edit' %}
+                <a href="{{ url_for('hr_health.list_health', employee_id=employee_id) }}" class="btn btn-light px-4 border shadow-sm">
+                    <i class="fas fa-times me-1"></i> Hủy
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<a href="/dashboard/hr" class="btn btn-link text-decoration-none mt-3 p-0 text-muted">
+    <i class="fas fa-arrow-left me-1"></i> Quay về Dashboard Nhân sự
+</a>
+{% endblock %}

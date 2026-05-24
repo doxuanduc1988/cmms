@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">✏️ Sửa vai trò: {{ role.RoleName }}</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="RoleName" class="form-label">Tên vai trò</label>
+            <input type="text" class="form-control" name="RoleName" value="{{ role.RoleName }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="Description" class="form-label">Mô tả</label>
+            <input type="text" class="form-control" name="Description" value="{{ role.Description }}">
+        </div>
+        <button type="submit" class="btn btn-primary">💾 Lưu</button>
+        <a href="{{ url_for('role.list_roles') }}" class="btn btn-secondary">↩️ Quay lại</a>
+    </form>
+</div>
+{% endblock %}

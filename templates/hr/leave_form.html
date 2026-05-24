@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Thêm mới' if action == 'create' else 'Cập nhật' }} Đơn nghỉ{% endblock %}
+{% block breadcrumb %}Nhân sự / Hồ sơ / {{ employee.FullName }} / Nghỉ phép / {{ 'Thêm mới' if action == 'create' else 'Cập nhật' }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h3 class="fw-bold mb-0">
+            <i class="fas {{ 'fa-plus-circle text-primary' if action == 'create' else 'fa-edit text-warning' }} me-2"></i>
+            {{ 'Thêm mới' if action == 'create' else 'Cập nhật' }} đơn nghỉ
+        </h3>
+        <p class="text-muted">Nhân viên: <strong>{{ employee.FullName }}</strong> ({{ employee.EmployeeID }})</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="post">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Loại nghỉ</label>
+                    <select name="LeaveType" class="form-select shadow-sm" id="LeaveType" onchange="toggleOT()" required>
+                        <option value="Nghỉ phép" {% if record and record.LeaveType == 'Nghỉ phép' %}selected{% endif %}>Nghỉ phép (Hưởng lương)</option>
+                        <option value="Nghỉ bù" {% if record and record.LeaveType == 'Nghỉ bù' %}selected{% endif %}>Nghỉ bù (Từ giờ OT)</option>
+                        <option value="Nghỉ không lương" {% if record and record.LeaveType == 'Nghỉ không lương' %}selected{% endif %}>Nghỉ không lương</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Trạng thái phê duyệt</label>
+                    <select name="Status" class="form-select shadow-sm" required>
+                        <option value="Chưa duyệt" {% if record and record.Status == 'Chưa duyệt' %}selected{% endif %}>Chưa duyệt</option>
+                        <option value="Đã duyệt" {% if record and record.Status == 'Đã duyệt' %}selected{% endif %}>Đã duyệt</option>
+                        <option value="Từ chối" {% if record and record.Status == 'Từ chối' %}selected{% endif %}>Từ chối</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Từ ngày</label>
+                    <input type="date" name="StartDate" class="form-control shadow-sm" value="{{ record.StartDate if record else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Đến ngày</label>
+                    <input type="date" name="EndDate" class="form-control shadow-sm" value="{{ record.EndDate if record else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Tổng số ngày nghỉ</label>
+                    <input type="number" name="TotalDays" step="0.5" class="form-control shadow-sm" value="{{ record.TotalDays if record else '' }}" placeholder="VD: 0.5, 1, 1.5..." required>
+                </div>
+
+                <div class="col-md-12" id="OTField" style="display: none;">
+                    <label class="form-label fw-semibold">Giờ OT khấu trừ (Dành cho nghỉ bù)</label>
+                    <input type="number" name="OTReference" step="0.5" class="form-control shadow-sm" value="{{ record.OTReference if record else '' }}" placeholder="Nhập số giờ OT tương ứng để trừ vào quỹ nghỉ bù">
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Lý do nghỉ</label>
+                    <input type="text" name="Reason" class="form-control shadow-sm" value="{{ record.Reason if record else '' }}" placeholder="VD: Việc gia đình, ốm đau..." required>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Ghi chú bổ sung</label>
+                    <textarea name="Notes" class="form-control shadow-sm" rows="3" placeholder="Ghi chú thêm nếu có...">{{ record.Notes if record else '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fas fa-save me-1"></i> Lưu thông tin
+                </button>
+                <a href="{{ url_for('leave.list_leave', employee_id=employee.EmployeeID) }}" class="btn btn-light px-4 border shadow-sm">
+                    <i class="fas fa-times me-1"></i> Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleOT() {
+    const type = document.getElementById('LeaveType').value;
+    const ot = document.getElementById('OTField');
+    ot.style.display = (type === 'Nghỉ bù') ? 'block' : 'none';
+}
+document.addEventListener("DOMContentLoaded", toggleOT);
+</script>
+{% endblock %}

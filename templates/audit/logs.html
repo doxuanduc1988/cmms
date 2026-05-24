@@ -1,0 +1,132 @@
+{% extends "layout.html" %}
+
+{% block title %}Nhật ký thao tác{% endblock %}
+
+{% block breadcrumb %}Hệ thống & Quyền{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-3">
+    <div class="bg-secondary bg-gradient text-white rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px;">
+        <i class="fas fa-history fs-4"></i>
+    </div>
+    <div>
+        <h2 class="fw-bold mb-0">Nhật ký thao tác hệ thống</h2>
+        <p class="text-muted mb-0 small">Theo dõi toàn bộ các hoạt động thay đổi dữ liệu và truy cập của người dùng.</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Dữ liệu nhật ký</h5>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="window.location.reload()">
+                    <i class="fas fa-sync-alt me-1"></i> Làm mới
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-home me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small uppercase">
+                    <tr>
+                        <th class="ps-4">Thời điểm</th>
+                        <th>Người thao tác</th>
+                        <th>Hành động</th>
+                        <th>Phân hệ</th>
+                        <th>Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="small fw-bold text-dark">{{ log.Timestamp.strftime("%d/%m/%Y") }}</div>
+                            <div class="text-muted small" style="font-size: 11px;">{{ log.Timestamp.strftime("%H:%M:%S") }}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-weight: 600; font-size: 12px;">
+                                    {{ log.EmployeeID[:2] if log.EmployeeID else '??' }}
+                                </div>
+                                <span class="fw-semibold">{{ log.EmployeeID }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if 'CREATE' in log.Action or 'Add' in log.Action %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2">
+                                    <i class="fas fa-plus-circle me-1"></i> {{ log.Action }}
+                                </span>
+                            {% elif 'UPDATE' in log.Action or 'Edit' in log.Action %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2">
+                                    <i class="fas fa-edit me-1"></i> {{ log.Action }}
+                                </span>
+                            {% elif 'DELETE' in log.Action or 'Remove' in log.Action %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2">
+                                    <i class="fas fa-trash-alt me-1"></i> {{ log.Action }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle px-2">
+                                    <i class="fas fa-info-circle me-1"></i> {{ log.Action }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ log.Module }}</span></td>
+                        <td>
+                            <div class="text-muted small" style="max-width: 400px; white-space: normal;">
+                                {{ log.Description or "—" }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fas fa-history d-block mb-2 fs-2"></i>
+                            Chưa có dữ liệu nhật ký nào.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if logs.pages > 1 %}
+<nav aria-label="Phân trang" class="mb-5">
+    <ul class="pagination pagination-sm justify-content-center mb-0">
+        <li class="page-item {% if not logs.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ logs.prev_num }}">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+
+        {% for page_num in logs.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                <li class="page-item {% if page_num == logs.page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+
+        <li class="page-item {% if not logs.has_next %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ logs.next_num }}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
+<div class="mb-5">
+    <a href="/dashboard/accounts" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Quay về Tài khoản & quyền
+    </a>
+</div>
+{% endblock %}

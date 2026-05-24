@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Thêm mới" if action == "create" else "Cập nhật" }} Bậc lương{% endblock %}
+{% block breadcrumb %}Nhân sự / Bậc lương / {{ "Thêm mới" if action == "create" else "Chỉnh sửa" }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h3 class="fw-bold mb-0">
+            <i class="fas {{ 'fa-plus-circle text-primary' if action == 'create' else 'fa-edit text-warning' }} me-2"></i>
+            {{ "Thêm mới" if action == "create" else "Cập nhật" }} Bậc lương
+        </h3>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="post">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Mã bậc lương</label>
+                    <input type="text" name="SalaryCode" class="form-control shadow-sm"
+                           value="{{ record.SalaryCode if record else '' }}"
+                           {% if action == 'edit' %}readonly{% endif %} required>
+                    {% if action == 'edit' %}
+                    <small class="text-muted">Mã bậc lương không thể thay đổi sau khi tạo.</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Hệ số lương</label>
+                    <input type="number" step="0.01" name="Coefficient" class="form-control shadow-sm"
+                           value="{{ record.Coefficient if record else '' }}" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Mô tả chức danh / Ghi chú</label>
+                    <input type="text" name="Description" class="form-control shadow-sm"
+                           value="{{ record.Description if record else '' }}" placeholder="VD: Kỹ sư chính, Chuyên viên cao cấp...">
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fas fa-save me-1"></i> Lưu thông tin
+                </button>
+                <a href="{{ url_for('salary_table.salary_table_list') }}" class="btn btn-light px-4 border shadow-sm">
+                    <i class="fas fa-times me-1"></i> Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

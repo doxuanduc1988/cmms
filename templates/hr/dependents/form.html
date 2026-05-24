@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card mt-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        {{ '📝 Sửa người phụ thuộc' if mode == 'edit' else '➕ Thêm người phụ thuộc' }}
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Họ tên <span class="text-danger">*</span></label>
+                    <input name="FullName" class="form-control" required value="{{ dependent.FullName if mode == 'edit' else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Quan hệ <span class="text-danger">*</span></label>
+                    <input name="Relationship" class="form-control" required value="{{ dependent.Relationship if mode == 'edit' else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Ngày sinh</label>
+                    <input name="BirthDate" type="date" class="form-control"
+                        value="{{ dependent.BirthDate.strftime('%Y-%m-%d') if mode == 'edit' and dependent.BirthDate else '' }}">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Giới tính</label>
+                    <select name="Gender" class="form-select">
+                        <option value="Nam" {% if mode == 'edit' and dependent.Gender == 'Nam' %}selected{% endif %}>Nam</option>
+                        <option value="Nữ" {% if mode == 'edit' and dependent.Gender == 'Nữ' %}selected{% endif %}>Nữ</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Ghi chú</label>
+                    <textarea name="Notes" class="form-control" rows="2">{{ dependent.Notes if mode == 'edit' else '' }}</textarea>
+                </div>
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-success">💾 Lưu</button>
+                <a href="{{ url_for('hr_dependent.list_dependents', employee_id=employee_id) }}" class="btn btn-secondary">⬅ Huỷ</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

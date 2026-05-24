@@ -1,0 +1,208 @@
+{% extends "estimation/dashboard.html" %}
+
+{% block title %}{{ sheet.SheetName }} | Dự toán{% endblock %}
+{% block breadcrumb %}Dự toán / {{ sheet.SheetCode }}{% endblock %}
+
+{% block est_content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h3 class="fw-bold mb-1">{{ sheet.SheetName }}</h3>
+        <p class="text-muted mb-0">
+            <i class="fas fa-tag me-1"></i> Mã: <strong>{{ sheet.SheetCode }}</strong> | 
+            <i class="fas fa-building me-1"></i> {{ sheet.ProjectName or 'Chưa xác định' }} |
+            <i class="fas fa-calendar-alt me-1"></i> {{ sheet.CreatedAt.strftime('%d/%m/%Y') if sheet.CreatedAt else '—' }} |
+            <span class="badge {% if sheet.Status == 'Draft' %}bg-warning{% elif sheet.Status == 'Submitted' %}bg-info{% else %}bg-success{% endif %}">
+                {{ 'Nháp' if sheet.Status == 'Draft' else ('Đã gửi' if sheet.Status == 'Submitted' else 'Đã duyệt') }}
+            </span>
+        </p>
+    </div>
+    <div class="col-auto">
+        <div class="btn-group shadow-sm">
+            <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#editSheetInfo">
+                <i class="fas fa-edit"></i> Sửa thông tin chung
+            </button>
+            <a href="{{ url_for('estimation.export_sheet_excel', sheet_id=sheet.SheetID) }}" class="btn btn-success"><i class="fas fa-file-excel"></i> Xuất Excel</a>
+            <a href="{{ url_for('estimation.list_sheets') }}" class="btn btn-secondary">Quay lại</a>
+        </div>
+    </div>
+</div>
+
+<!-- Form sửa thông tin chung (Collapse) -->
+<div class="collapse mb-4" id="editSheetInfo">
+    <div class="card border-primary-subtle shadow-sm">
+        <div class="card-header bg-primary-subtle py-2">
+            <h6 class="mb-0 fw-bold">Chỉnh sửa thông tin phiếu</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Mã phiếu</label>
+                        <input type="text" name="SheetCode" class="form-control form-control-sm" value="{{ sheet.SheetCode }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Tên phiếu dự toán</label>
+                        <input type="text" name="SheetName" class="form-control form-control-sm" value="{{ sheet.SheetName }}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Trạng thái</label>
+                        <select name="Status" class="form-select form-select-sm">
+                            <option value="Draft" {% if sheet.Status == 'Draft' %}selected{% endif %}>Nháp</option>
+                            <option value="Submitted" {% if sheet.Status == 'Submitted' %}selected{% endif %}>Đã gửi</option>
+                            <option value="Approved" {% if sheet.Status == 'Approved' %}selected{% endif %}>Đã duyệt</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-9">
+                        <label class="form-label small fw-bold">Tên công trình / hạng mục</label>
+                        <input type="text" name="ProjectName" class="form-control form-control-sm" value="{{ sheet.ProjectName or '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Ngày tạo</label>
+                        <input type="date" name="CreatedAt" class="form-control form-control-sm" value="{{ sheet.CreatedAt.strftime('%Y-%m-%d') if sheet.CreatedAt else '' }}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Ghi chú</label>
+                    <textarea name="Notes" class="form-control form-control-sm" rows="2">{{ sheet.Notes or '' }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm px-4">Cập nhật thông tin</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Tổng chi phí -->
+<div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white;">
+    <div class="card-body d-flex justify-content-between align-items-center py-4">
+        <div>
+            <div class="text-white-50 small text-uppercase fw-bold mb-1">Tổng cộng chi phí nhân công</div>
+            <div class="h2 fw-bold mb-0">{{ "{:,.0f}".format(sheet.TotalCost or 0) }} ₫</div>
+        </div>
+        <div class="display-6 opacity-25">
+            <i class="fas fa-calculator"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Bảng chi tiết -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold">Chi tiết hạng mục công việc</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">STT</th>
+                        <th>Đầu mục công việc</th>
+                        <th>Bậc thợ</th>
+                        <th class="text-end">Đơn giá</th>
+                        <th class="text-center">Số công</th>
+                        <th class="text-center">Số NC</th>
+                        <th class="text-end">Thành tiền</th>
+                        <th class="pe-4">Ghi chú</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in sheet.items %}
+                    <tr>
+                        <td class="ps-4 text-muted">{{ loop.index }}</td>
+                        <td><div class="fw-semibold">{{ item.category.CategoryName if item.category else '—' }}</div></td>
+                        <td><span class="badge bg-secondary-subtle text-secondary border">{{ item.grade.GradeCode if item.grade else '—' }}</span></td>
+                        <td class="text-end small">{{ "{:,.0f}".format(item.UnitPrice or 0) }}</td>
+                        <td class="text-center">{{ item.WorkDays }}</td>
+                        <td class="text-center">{{ item.NumberOfWorkers }}</td>
+                        <td class="text-end fw-bold text-primary">{{ "{:,.0f}".format(item.TotalPrice or 0) }} ₫</td>
+                        <td class="small text-muted">{{ item.Note or '' }}</td>
+                        <td class="text-center pe-3">
+                            <form method="POST" action="{{ url_for('estimation.delete_item', item_id=item.ItemID) }}" onsubmit="return confirm('Xoá dòng này?')">
+                                <button type="submit" class="btn btn-link text-danger p-0"><i class="fas fa-times"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="9" class="text-center py-5 text-muted">Chưa có hạng mục nào trong dự toán này.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Thêm hạng mục -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="fas fa-plus-circle text-primary me-2"></i>Thêm hạng mục mới</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('estimation.add_item', sheet_id=sheet.SheetID) }}">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Đầu mục công việc</label>
+                    <select name="CategoryID" class="form-select" required>
+                        <option value="">-- Chọn --</option>
+                        {% for c in categories %}
+                        <option value="{{ c.CategoryID }}">{{ c.CategoryCode }} — {{ c.CategoryName }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Bậc thợ</label>
+                    <select name="GradeID" id="gradeSelect" class="form-select" required onchange="calcUnitPrice()">
+                        <option value="">-- Chọn --</option>
+                        {% for g in grades %}
+                        <option value="{{ g.GradeID }}" data-wage="{{ g.DailyWage }}" data-coeff="{{ g.Coefficient }}">{{ g.GradeCode }} — {{ g.GradeName }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Số công</label>
+                    <input type="number" step="0.5" min="0.5" name="WorkDays" id="workDays" class="form-control" value="1" required onchange="calcUnitPrice()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Số nhân công</label>
+                    <input type="number" min="1" name="NumberOfWorkers" id="numWorkers" class="form-control" value="1" required onchange="calcUnitPrice()">
+                </div>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-8">
+                    <label class="form-label small fw-bold">Ghi chú chi tiết</label>
+                    <input type="text" name="Note" class="form-control" placeholder="VD: Công tác tháo lắp thiết bị...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Thành tiền (tạm tính)</label>
+                    <div id="calcPreview" class="form-control bg-light fw-bold text-primary border-primary-subtle">
+                        0 ₫
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary px-4 shadow-sm"><i class="fas fa-plus me-1"></i> Thêm vào dự toán</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function calcUnitPrice() {
+    const sel = document.getElementById('gradeSelect');
+    const opt = sel.options[sel.selectedIndex];
+    const preview = document.getElementById('calcPreview');
+    
+    if (!opt || !opt.value) { 
+        preview.textContent = '0 ₫'; 
+        return; 
+    }
+    
+    const wage = parseFloat(opt.dataset.wage) || 0;
+    const coeff = parseFloat(opt.dataset.coeff) || 0;
+    const days = parseFloat(document.getElementById('workDays').value) || 0;
+    const workers = parseInt(document.getElementById('numWorkers').value) || 0;
+    
+    const total = wage * coeff * days * workers;
+    preview.textContent = total.toLocaleString('vi-VN') + ' ₫';
+}
+</script>
+{% endblock %}

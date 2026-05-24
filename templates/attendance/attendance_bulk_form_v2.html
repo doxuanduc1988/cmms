@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Chấm công nhóm{% endblock %}
+{% block breadcrumb %}Chấm công nhóm{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-success-soft"><i class="fas fa-clipboard-list"></i></div>
+    <h2>Danh sách chấm công — {{ selected_date }}</h2>
+  </div>
+  <p class="page-desc">Nhập giờ vào, giờ ra và trạng thái cho từng nhân viên</p>
+</div>
+
+<a href="{{ url_for('attendance_bulk.bulk_select_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay lại chọn điều kiện
+</a>
+
+<form method="POST" action="{{ url_for('attendance_bulk.bulk_save_attendance') }}">
+  <input type="hidden" name="selected_date" value="{{ selected_date }}">
+  <input type="hidden" name="department_code" value="{{ department_code }}">
+  <input type="hidden" name="shift_id" value="{{ shift_id }}">
+  <input type="hidden" name="crew_id" value="{{ crew_id }}">
+
+  {% if employees %}
+  <div class="data-card">
+    <div class="data-card-header">
+      <h5><i class="fas fa-users text-success"></i> Danh sách nhân viên</h5>
+      <span class="text-muted small">{{ employees|length }} nhân viên</span>
+    </div>
+    <div class="data-card-body">
+      <div class="table-responsive">
+        <table class="pro-table text-center">
+          <thead>
+            <tr>
+              <th>STT</th><th>Mã NV</th><th class="text-start">Họ tên</th><th>Giờ vào</th><th>Giờ ra</th><th>Trạng thái</th><th class="text-start">Ghi chú</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for emp in employees %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>
+                <input type="hidden" name="employee_ids" value="{{ emp.EmployeeID }}">
+                <strong>{{ emp.EmployeeID }}</strong>
+              </td>
+              <td class="text-start">{{ emp.FullName }}</td>
+              <td><input type="time" class="form-control form-control-sm" name="check_in_time_{{ emp.EmployeeID }}" value="{{ check_in_default }}" required style="min-width:110px;"></td>
+              <td><input type="time" class="form-control form-control-sm" name="check_out_time_{{ emp.EmployeeID }}" value="{{ check_out_default }}" required style="min-width:110px;"></td>
+              <td>
+                <select name="status_{{ emp.EmployeeID }}" class="form-select form-select-sm" style="min-width:120px;">
+                  {% for value, label in status_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><input type="text" class="form-control form-control-sm" name="note_{{ emp.EmployeeID }}" placeholder="Ghi chú..." style="min-width:140px;"></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-end">
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Lưu chấm công nhóm</button>
+  </div>
+  {% else %}
+  <div class="data-card">
+    <div class="data-card-body with-padding">
+      <div class="empty-state">
+        <i class="fas fa-users-slash d-block"></i>
+        <p>Không có nhân sự nào được tìm thấy trong kíp này.</p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</form>
+{% endblock %}

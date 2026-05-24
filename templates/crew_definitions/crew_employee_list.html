@@ -1,0 +1,36 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="text-center">📋 Danh sách nhân viên trong Kíp: {{ crew.CrewName }}</h2>
+
+<div class="mt-3 mb-3">
+  <a href="{{ url_for('crew_definitions.manage_crew_definitions') }}" class="btn btn-secondary">⬅️ Quay lại danh sách Kíp</a>
+</div>
+
+<div class="table-responsive mt-2">
+<table class="table table-bordered table-hover">
+  <thead class="table-light text-center">
+    <tr>
+      <th>STT</th>
+      <th>Mã NV</th>
+      <th>Họ tên</th>
+      <th>Phòng/Đơn vị</th>
+      <th>Vị trí</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for emp in employees %}
+    <tr>
+      <td class="text-center">{{ loop.index }}</td>
+      <td class="text-center">{{ emp.EmployeeID }}</td>
+      <td>{{ emp.FullName }}</td>
+      <td>{{ departments.get(emp.DepartmentCode, '') }}</td>
+      <td>{{ positions.get(emp.JobPositionID, '') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% endblock %}

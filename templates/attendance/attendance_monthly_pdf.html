@@ -1,0 +1,26 @@
+<table border="1">
+  <thead>
+    <tr>
+      <th>STT</th>
+      <th>Mã NV</th>
+      <th>Họ tên</th>
+      {% for d in range(1, 32) %}
+        <th>{{ d }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for emp in employees %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ emp.EmployeeID }}</td>
+      <td>{{ emp.FullName }}</td>
+      {% for d in range(1, 32) %}
+        <td>
+          {{ records.get(emp.EmployeeID, {}).get(d, '') }}
+        </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

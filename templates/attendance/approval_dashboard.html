@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Thống kê phê duyệt{% endblock %}
+{% block breadcrumb %}Thống kê phê duyệt chấm công{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-info-soft"><i class="fas fa-chart-pie"></i></div>
+    <h2>Thống kê duyệt chấm công</h2>
+  </div>
+  <p class="page-desc">Tổng hợp số liệu phê duyệt theo từng cấp</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<!-- Stats Cards -->
+<div class="stats-row">
+  {% for level, data in dashboard.items() %}
+  <div class="mini-stat">
+    <div class="mini-stat-icon {% if level == 1 %}bg-primary-soft{% elif level == 2 %}bg-warning-soft{% else %}bg-success-soft{% endif %}">
+      <i class="fas {% if level == 1 %}fa-user-tie{% elif level == 2 %}fa-clipboard-check{% else %}fa-user-shield{% endif %}"></i>
+    </div>
+    <div class="mini-stat-info">
+      <h4>{{ data.get("Approved", 0) + data.get("Rejected", 0) }}</h4>
+      <span>
+        {% if level == 1 %}Trưởng phòng{% elif level == 2 %}Hành chính{% elif level == 3 %}Nhân sự{% else %}Cấp {{ level }}{% endif %}
+      </span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Data Table -->
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-table text-primary"></i> Chi tiết theo cấp duyệt</h5>
+  </div>
+  <div class="data-card-body">
+    <table class="pro-table">
+      <thead>
+        <tr>
+          <th>Cấp duyệt</th>
+          <th class="text-center">Lượt duyệt</th>
+          <th class="text-center">Lượt từ chối</th>
+          <th>Người duyệt nhiều nhất</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for level, data in dashboard.items() %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="mini-stat-icon {% if level == 1 %}bg-primary-soft{% elif level == 2 %}bg-warning-soft{% else %}bg-success-soft{% endif %}" style="width:32px;height:32px;border-radius:8px;font-size:14px;">
+                <i class="fas {% if level == 1 %}fa-user-tie{% elif level == 2 %}fa-clipboard-check{% else %}fa-user-shield{% endif %}"></i>
+              </div>
+              <strong>{% if level == 1 %}Trưởng phòng{% elif level == 2 %}Hành chính{% elif level == 3 %}Nhân sự{% else %}Cấp {{ level }}{% endif %}</strong>
+            </div>
+          </td>
+          <td class="text-center"><span class="badge-status badge-approved"><i class="fas fa-check"></i> {{ data.get("Approved", 0) }}</span></td>
+          <td class="text-center"><span class="badge-status badge-rejected"><i class="fas fa-times"></i> {{ data.get("Rejected", 0) }}</span></td>
+          <td>
+            <i class="fas fa-trophy text-warning me-1"></i>
+            {{ top_by_level[level].User }} <span class="text-muted">({{ top_by_level[level].Count }} lượt)</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

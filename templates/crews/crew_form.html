@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>{{ '➕ Thêm mới' if action == 'create' else '✏️ Cập nhật' }} kíp vận hành</h4>
+
+<form method="post">
+  <div class="mb-3">
+    <label>Mã kíp</label>
+    <input type="text" name="CrewCode" class="form-control" value="{{ crew.CrewCode if crew else '' }}" required>
+  </div>
+  <div class="mb-3">
+    <label>Tên kíp</label>
+    <input type="text" name="CrewName" class="form-control" value="{{ crew.CrewName if crew else '' }}" required>
+  </div>
+  <div class="mb-3">
+    <label>Mô tả</label>
+    <textarea name="Description" class="form-control">{{ crew.Description if crew else '' }}</textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">💾 Lưu</button>
+  <a href="{{ url_for('crew.crew_list') }}" class="btn btn-secondary">↩️ Quay lại</a>
+</form>
+{% endblock %}

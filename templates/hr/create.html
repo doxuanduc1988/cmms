@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Tạo hồ sơ nhân sự{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Section -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-0 text-primary"><i class="fas fa-user-plus me-2"></i>Tạo hồ sơ nhân sự</h2>
+                    <p class="text-muted">Nhập thông tin chi tiết để thêm nhân viên mới vào hệ thống</p>
+                </div>
+                <a href="{{ url_for('hr.list_profiles') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </div>
+
+            <form method="POST" class="needs-validation" novalidate>
+                <!-- Section 1: Basic Information -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-info-circle text-primary me-2"></i>Thông tin cơ bản</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Mã nhân viên <span class="text-danger">*</span></label>
+                                <input type="text" name="EmployeeID" class="form-control rounded-3" placeholder="VD: NV001" required>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                                <input type="text" name="FullName" class="form-control rounded-3" placeholder="Nhập đầy đủ họ tên" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Giới tính</label>
+                                <select name="Gender" class="form-select rounded-3">
+                                    <option value="">-- Chọn --</option>
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Mã cán bộ (Staff Code)</label>
+                                <input type="text" name="StaffCode" class="form-control rounded-3">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Ngày sinh</label>
+                                <input type="date" name="DateOfBirth" class="form-control rounded-3">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Quốc tịch</label>
+                                <input type="text" name="Nationality" class="form-control rounded-3" value="Việt Nam">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Dân tộc</label>
+                                <input type="text" name="Ethnicity" class="form-control rounded-3" value="Kinh">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Work Assignment -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-briefcase text-primary me-2"></i>Đơn vị & Vị trí công tác</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Chức danh / Vị trí</label>
+                                <select name="JobPositionID" class="form-select rounded-3" required>
+                                    <option value="">-- Chọn chức danh --</option>
+                                    {% for position in job_positions %}
+                                        <option value="{{ position.JobPositionID }}">{{ position.JobPositionName }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Đơn vị công tác</label>
+                                <select name="DepartmentCode" class="form-select rounded-3" required>
+                                    <option value="">-- Chọn đơn vị --</option>
+                                    {% for dept in departments %}
+                                        <option value="{{ dept.DepartmentCode }}">{{ dept.DepartmentCode }} - {{ dept.DepartmentName }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Identity & Insurance -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-id-card text-primary me-2"></i>Định danh & Bảo hiểm</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Số CCCD/CMND</label>
+                                <input type="text" name="IDNumber" class="form-control rounded-3">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Ngày cấp</label>
+                                <input type="date" name="IDIssuedDate" class="form-control rounded-3">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Nơi cấp</label>
+                                <input type="text" name="IDIssuedPlace" class="form-control rounded-3">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Mã số BHXH</label>
+                                <input type="text" name="InsuranceNumber" class="form-control rounded-3">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Mã số thuế</label>
+                                <input type="text" name="TaxCode" class="form-control rounded-3">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Contract Information -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-file-signature text-primary me-2"></i>Hợp đồng lao động</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Số hợp đồng</label>
+                                <input type="text" name="ContractNumber" class="form-control rounded-3">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Loại hợp đồng</label>
+                                <input type="text" name="ContractType" class="form-control rounded-3" placeholder="VD: Thử việc, 1 năm, Không thời hạn">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Ngày bắt đầu làm việc</label>
+                                <input type="date" name="StartDate" class="form-control rounded-3">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card border-0 shadow-sm rounded-4 mb-5 bg-light">
+                    <div class="card-body p-4 text-center">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
+                            <i class="fas fa-save me-2"></i>Lưu hồ sơ nhân sự
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+    .card {
+        transition: transform 0.2s ease;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

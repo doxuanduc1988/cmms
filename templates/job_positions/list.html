@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Chức danh Công việc{% endblock %}
+{% block breadcrumb %}Nhân sự / Chức danh{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h3 class="fw-bold mb-0">Chức danh công việc</h3>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('job_positions.create_job_position') }}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus"></i> Thêm chức danh
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4" style="width: 80px;">STT</th>
+                        <th>Mã chức danh</th>
+                        <th>Tên chức danh</th>
+                        <th>Mô tả</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position in positions %}
+                    <tr>
+                        <td class="ps-4 text-muted small">{{ loop.index }}</td>
+                        <td class="fw-bold text-primary">{{ position.JobPositionCode }}</td>
+                        <td class="fw-semibold">{{ position.JobPositionName }}</td>
+                        <td class="text-muted small">{{ position.Description or '' }}</td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group">
+                                {% if has_permission('hr', 'update') %}
+<a href="{{ url_for('job_positions.edit_job_position', position_id=position.JobPositionID) }}" class="btn btn-secondary btn-sm" title="Sửa">
+                                    <i class="fas fa-edit text-warning"></i>
+                                </a>
+{% else %}
+<button disabled class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền sửa">
+                                    <i class="fas fa-edit text-secondary"></i>
+                                </button>
+{% endif %}
+                                {% if has_permission('hr', 'delete') %}
+<form action="{{ url_for('job_positions.delete_job_position', position_id=position.JobPositionID) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa chức danh này không?');">
+                                    <button type="submit" class="btn btn-secondary btn-sm" title="Xóa">
+                                        <i class="fas fa-trash text-danger"></i>
+                                    </button>
+                                </form>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền xóa" type="submit" class="btn btn-secondary btn-sm" title="Xóa">
+                                        <i class="fas fa-trash text-secondary"></i>
+                                    </button>
+{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">Không có chức danh nào được tìm thấy</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<a href="/dashboard/hr" class="btn btn-link text-decoration-none mt-3 p-0 text-muted">
+    <i class="fas fa-arrow-left me-1"></i> Quay về Dashboard Nhân sự
+</a>
+{% endblock %}

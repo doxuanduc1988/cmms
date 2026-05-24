@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Duyệt chấm công hàng loạt{% endblock %}
+{% block breadcrumb %}Duyệt hàng loạt{% endblock %}
+
+{% block content %}
+{% if session.role in ['admin', 'truongphong', 'hanhchinh'] %}
+<!-- Page Header -->
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-success-soft"><i class="fas fa-check-double"></i></div>
+    <h2>Duyệt chấm công hàng loạt</h2>
+  </div>
+  <p class="page-desc">Chọn nhiều bản ghi để phê duyệt hoặc từ chối cùng lúc</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<form method="POST" action="/attendance/approval/bulk/approve">
+  <!-- Action Buttons -->
+  <div class="d-flex gap-2 mb-3">
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-check-circle"></i> Duyệt đã chọn
+    </button>
+    <button formaction="/attendance/approval/bulk/reject" formmethod="POST" class="btn btn-secondary" style="color: var(--danger);">
+      <i class="fas fa-times-circle"></i> Từ chối đã chọn
+    </button>
+  </div>
+
+  <!-- Data Table -->
+  <div class="data-card">
+    <div class="data-card-header">
+      <h5><i class="fas fa-list text-primary"></i> Danh sách chấm công</h5>
+      <span class="badge-status badge-pending">{{ records|length }} bản ghi</span>
+    </div>
+    <div class="data-card-body">
+      <div class="table-responsive">
+        <table class="pro-table text-center">
+          <thead>
+            <tr>
+              <th><input type="checkbox" class="form-check-input" id="check_all" onclick="toggleAll(this)"></th>
+              <th>#</th>
+              <th>Mã NV</th>
+              <th class="text-start">Họ tên</th>
+              <th class="text-start">Phòng</th>
+              <th>Kíp</th>
+              <th>Ngày</th>
+              <th>Vào</th>
+              <th>Ra</th>
+              <th>Trạng thái</th>
+              <th class="text-start">Ghi chú</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in records %}
+            <tr>
+              <td>
+                {% if session.role in ['admin', 'truongphong'] %}
+                  <input type="checkbox" class="form-check-input" name="attendance_ids" value="{{ row.AttendanceID }}">
+                {% elif session.role == 'hanhchinh' and row.LastLevel == 1 %}
+                  <input type="checkbox" class="form-check-input" name="attendance_ids" value="{{ row.AttendanceID }}">
+                {% endif %}
+              </td>
+              <td>{{ loop.index }}</td>
+              <td><strong>{{ row.EmployeeID }}</strong></td>
+              <td class="text-start">{{ row.FullName or '' }}</td>
+              <td class="text-start">{{ row.DepartmentCode or '' }}</td>
+              <td>{{ row.CrewName or '' }}</td>
+              <td>{{ row.Date }}</td>
+              <td>{{ row.CheckInTime or '-' }}</td>
+              <td>{{ row.CheckOutTime or '-' }}</td>
+              <td>
+                {% set st = statuses.get(row.AttendanceID, 'Pending') %}
+                {% if st == 'Approved' %}
+                  <span class="badge-status badge-approved"><i class="fas fa-check"></i> Đã duyệt</span>
+                {% elif st == 'Rejected' %}
+                  <span class="badge-status badge-rejected"><i class="fas fa-times"></i> Từ chối</span>
+                {% else %}
+                  <span class="badge-status badge-pending"><i class="fas fa-clock"></i> Đang chờ</span>
+                {% endif %}
+              </td>
+              <td class="text-start text-muted">{{ row.Note }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</form>
+
+{% else %}
+<div class="data-card">
+  <div class="data-card-body with-padding">
+    <div class="empty-state">
+      <i class="fas fa-lock d-block text-danger"></i>
+      <p class="text-danger">Bạn không có quyền duyệt chấm công hàng loạt.</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleAll(source) {
+  const checkboxes = document.querySelectorAll('input[name="attendance_ids"]:not([disabled])');
+  for (const checkbox of checkboxes) {
+    checkbox.checked = source.checked;
+  }
+}
+</script>
+{% endblock %}

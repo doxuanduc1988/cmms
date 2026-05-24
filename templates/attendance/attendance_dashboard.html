@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard Chấm công{% endblock %}
+{% block breadcrumb %}Chấm công & Phê duyệt{% endblock %}
+
+
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-primary-soft"><i class="fas fa-chart-bar"></i></div>
+    <h2>Dashboard Thống kê chấm công</h2>
+  </div>
+  <p class="page-desc">Tổng quan và điều hướng hệ thống Chấm công tháng {{ month }}/{{ year }}</p>
+</div>
+
+
+
+<!-- Quick Actions -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{{ url_for('attendance_create.create_attendance') }}" class="action-card">
+      <i class="fas fa-user-clock action-icon"></i>
+      <h6 class="action-title">Chấm công cá nhân</h6>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{{ url_for('attendance_bulk.bulk_create_attendance') }}" class="action-card">
+      <i class="fas fa-users-rectangle action-icon"></i>
+      <h6 class="action-title">Chấm công nhóm</h6>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{{ url_for('attendance_grid.bulk_grid_attendance') }}" class="action-card">
+      <i class="fas fa-th action-icon text-info"></i>
+      <h6 class="action-title">Chấm công Grid</h6>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{{ url_for('attendance_check.check_attendance') }}" class="action-card">
+      <i class="fas fa-list-check action-icon text-success"></i>
+      <h6 class="action-title">Tra cứu & Sửa công</h6>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{{ url_for('attendance_dashboard.approval_dashboard') }}" class="action-card">
+      <i class="fas fa-clipboard-check action-icon text-warning"></i>
+      <h6 class="action-title">Phê duyệt công</h6>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{{ url_for('attendance_log.view_logs') }}" class="action-card">
+      <i class="fas fa-scroll action-icon text-secondary"></i>
+      <h6 class="action-title">Nhật ký chỉnh sửa</h6>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{{ url_for('attendance_unmarked.view_unmarked_attendance') }}" class="action-card">
+      <i class="fas fa-user-slash action-icon text-danger"></i>
+      <h6 class="action-title">Chưa chấm công</h6>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{{ url_for('attendance_summary.monthly_summary') }}" class="action-card">
+      <i class="fas fa-file-excel action-icon text-success"></i>
+      <h6 class="action-title">Báo cáo tháng</h6>
+    </a>
+  </div>
+</div>
+
+<!-- Filter -->
+<div class="filter-card">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Tháng</label>
+      <select name="month" class="form-select">
+        {% for m in range(1, 13) %}
+        <option value="{{ m }}" {% if m == month %}selected{% endif %}>Tháng {{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Năm</label>
+      <input type="number" name="year" class="form-control" value="{{ year }}">
+    </div>
+    <div class="col-md-3 col-lg-2">
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="fas fa-search"></i> Xem
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs-modern mb-4" id="myTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="shift-tab" data-bs-toggle="tab" data-bs-target="#shift" type="button" role="tab">
+      <i class="fas fa-layer-group me-1"></i> Theo Ca
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="line-tab" data-bs-toggle="tab" data-bs-target="#line" type="button" role="tab">
+      <i class="fas fa-chart-line me-1"></i> Theo Ngày
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="heatmap-tab" data-bs-toggle="tab" data-bs-target="#heatmap" type="button" role="tab">
+      <i class="fas fa-th me-1"></i> Heatmap
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+  <!-- Bar Chart by Shift -->
+  <div class="tab-pane fade show active" id="shift" role="tabpanel">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h5><i class="fas fa-chart-bar text-primary"></i> Công trung bình theo ca</h5>
+      </div>
+      <div class="chart-container">
+        <canvas id="shiftChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Line Chart by Day -->
+  <div class="tab-pane fade" id="line" role="tabpanel">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h5><i class="fas fa-chart-line text-info"></i> Công trung bình theo ngày</h5>
+      </div>
+      <div class="chart-container">
+        <canvas id="lineChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heatmap -->
+  <div class="tab-pane fade" id="heatmap" role="tabpanel">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h5><i class="fas fa-th text-success"></i> Heatmap chấm công</h5>
+      </div>
+      <div class="data-card-body">
+        <div class="table-responsive" style="max-height: 500px; overflow:auto;">
+          <table class="pro-table text-center">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Mã NV</th>
+                <th class="text-start">Họ tên</th>
+                {% for d in days %}<th>{{ d }}</th>{% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for emp_id, full_name in employees.items() %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td><strong>{{ emp_id }}</strong></td>
+                <td class="text-start">{{ full_name }}</td>
+                {% for h in heatmap[emp_id] %}
+                <td class="{% if h == 0 %}heatmap-0{% elif h < 4 %}heatmap-low{% elif h < 8 %}heatmap-mid{% else %}heatmap-high{% endif %}">
+                  {{ h if h > 0 else '' }}
+                </td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const shiftChart = new Chart(document.getElementById('shiftChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: {{ shift_labels | tojson }},
+      datasets: [{
+        label: 'Công trung bình theo ca',
+        data: {{ shift_values | tojson }},
+        backgroundColor: 'rgba(37, 99, 235, 0.15)',
+        borderColor: 'rgba(37, 99, 235, 1)',
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  const lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: {{ line_labels | tojson }},
+      datasets: [{
+        label: 'Công trung bình theo ngày',
+        data: {{ line_values | tojson }},
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.05)',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: '#2563eb',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+</script>
+{% endblock %}

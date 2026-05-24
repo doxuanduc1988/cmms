@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Theo dõi phê duyệt chấm công{% endblock %}
+{% block breadcrumb %}Theo dõi phê duyệt{% endblock %}
+
+{% block content %}
+{% if session.role in ['admin', 'truongphong', 'hanhchinh'] %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-info-soft"><i class="fas fa-tasks"></i></div>
+    <h2>Theo dõi trạng thái phê duyệt</h2>
+  </div>
+  <p class="page-desc">Tra cứu và theo dõi tiến trình phê duyệt chấm công</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<!-- Filter -->
+<div class="filter-card">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-md-2">
+      <label class="form-label">Tháng</label>
+      <select name="month" class="form-select">
+        {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == month %}selected{% endif %}>Tháng {{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Năm</label>
+      <select name="year" class="form-select">
+        {% for y in range(current_year - 2, current_year + 1) %}
+          <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Phòng ban</label>
+      <select name="department" class="form-select">
+        <option value="">-- Tất cả --</option>
+        {% for d in departments %}
+          <option value="{{ d.DepartmentCode }}" {% if d.DepartmentCode == selected_dept %}selected{% endif %}>{{ d.DepartmentName }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Trạng thái</label>
+      <select name="status" class="form-select">
+        <option value="">-- Tất cả --</option>
+        <option value="Approved" {% if selected_status == 'Approved' %}selected{% endif %}>Đã duyệt</option>
+        <option value="Pending" {% if selected_status == 'Pending' %}selected{% endif %}>Đang chờ</option>
+        <option value="Rejected" {% if selected_status == 'Rejected' %}selected{% endif %}>Bị từ chối</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Lọc</button>
+    </div>
+  </form>
+</div>
+
+<!-- Table -->
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-clipboard-check text-info"></i> Kết quả</h5>
+  </div>
+  <div class="data-card-body">
+    <div class="table-responsive">
+      <table class="pro-table text-center">
+        <thead>
+          <tr>
+            <th>#</th><th>Mã NV</th><th>Ngày</th><th>Giờ vào</th><th>Giờ ra</th><th>Trạng thái</th><th>Phòng</th><th>Cấp duyệt</th><th>Người thao tác</th><th>Thời gian</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in records %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ row.EmployeeID }}</strong></td>
+            <td>{{ row.Date }}</td>
+            <td>{{ row.CheckInTime }}</td>
+            <td>{{ row.CheckOutTime }}</td>
+            <td>
+              {% if row.Status == 'Approved' %}
+                <span class="badge-status badge-approved"><i class="fas fa-check"></i> Đã duyệt</span>
+              {% elif row.Status == 'Rejected' %}
+                <span class="badge-status badge-rejected"><i class="fas fa-times"></i> Từ chối</span>
+              {% else %}
+                <span class="badge-status badge-pending"><i class="fas fa-clock"></i> Đang chờ</span>
+              {% endif %}
+            </td>
+            <td>{{ row.DepartmentCode or '-' }}</td>
+            <td>{{ row.LastLevel or '-' }}</td>
+            <td>{{ row.LastModifiedBy or '-' }}</td>
+            <td class="text-muted">{{ row.LastModifiedAt or '-' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="10" class="text-center text-muted py-4">Không có dữ liệu phù hợp.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="data-card">
+  <div class="data-card-body with-padding">
+    <div class="empty-state">
+      <i class="fas fa-lock d-block text-danger"></i>
+      <p class="text-danger">Bạn không có quyền xem trang theo dõi phê duyệt chấm công.</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

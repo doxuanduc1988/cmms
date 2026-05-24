@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Kết quả chấm công{% endblock %}
+{% block breadcrumb %}Kết quả tra cứu{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-primary-soft"><i class="fas fa-clipboard-list"></i></div>
+    <h2>Kết quả chấm công ngày {{ selected_date }}</h2>
+  </div>
+  <p class="page-desc">Chi tiết bản ghi chấm công theo điều kiện đã chọn</p>
+</div>
+
+<a href="{{ url_for('attendance_check.check_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay lại tra cứu
+</a>
+
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-table text-primary"></i> Dữ liệu chấm công</h5>
+    <span class="text-muted small">{{ results|length }} bản ghi</span>
+  </div>
+  <div class="data-card-body">
+    <div class="table-responsive">
+      <table class="pro-table text-center">
+        <thead>
+          <tr>
+            <th>STT</th><th>Mã NV</th><th class="text-start">Họ tên</th><th>Phòng</th><th>Ca</th><th>Kíp</th><th>Giờ vào</th><th>Giờ ra</th><th>Trạng thái</th><th>Loại công</th><th class="text-start">Ghi chú</th><th>Sửa</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ row.EmployeeID }}</strong></td>
+            <td class="text-start">{{ row.FullName }}</td>
+            <td>{{ row.DepartmentCode }}</td>
+            <td>{{ row.ShiftName or '' }}</td>
+            <td>{{ row.CrewID or '' }}</td>
+            <td>{{ row.CheckInTime }}</td>
+            <td>{{ row.CheckOutTime }}</td>
+            <td>
+              {% if row.Status == 'Working' %}
+                <span class="badge-status badge-working"><i class="fas fa-briefcase"></i> Đi làm</span>
+              {% elif row.Status == 'OT' %}
+                <span class="badge-status badge-ot"><i class="fas fa-clock"></i> OT</span>
+              {% elif row.Status == 'Leave' %}
+                <span class="badge-status badge-leave"><i class="fas fa-plane"></i> Nghỉ</span>
+              {% elif row.Status == 'Absent' %}
+                <span class="badge-status badge-absent"><i class="fas fa-times"></i> Vắng</span>
+              {% else %}
+                <span class="badge-status badge-pending">{{ row.Status }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% set start = row.CheckInTime %}
+              {% set end = row.CheckOutTime %}
+              {% if start and end %}
+                {% if start.strftime('%H:%M') >= "22:00" or end.strftime('%H:%M') <= "06:00" %}
+                  <span class="text-muted"><i class="fas fa-moon"></i> Ca 3</span>
+                {% elif row.Status == "OT" %}
+                  <span class="text-muted"><i class="fas fa-clock"></i> Ngoài giờ</span>
+                {% else %}
+                  <span class="text-muted"><i class="fas fa-sun"></i> Trong giờ</span>
+                {% endif %}
+              {% else %}-{% endif %}
+            </td>
+            <td class="text-start text-muted">{{ row.Note or '' }}</td>
+            <td>
+              <a href="{{ url_for('attendance_edit.edit_attendance', attendance_id=row.AttendanceID) }}" class="btn-action" title="Chỉnh sửa">
+                <i class="fas fa-pen"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+          {% if results|length == 0 %}
+          <tr><td colspan="12">
+            <div class="empty-state py-4">
+              <i class="fas fa-search d-block"></i>
+              <p>Không tìm thấy dữ liệu</p>
+            </div>
+          </td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

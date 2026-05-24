@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CMMS TB2 | Hệ thống Quản trị</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <!-- Optimized Font Loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome (Lightweight CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --bg-page: #f9fafb;
+            --text-title: #111827;
+            --text-body: #4b5563;
+            --border: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-body);
+            margin: 0;
+            overflow-x: hidden;
+            /* Fade in animation for the whole page */
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Subtle background pattern (CSS only - high performance) */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#e5e7eb 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .nav-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container-main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .welcome-section {
+            padding: 60px 0 40px;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-title);
+            letter-spacing: -0.025em;
+            margin-bottom: 12px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 18px;
+            margin-bottom: 80px;
+        }
+
+        .card-link {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            /* GPU acceleration for smoother animations */
+            will-change: transform, box-shadow;
+        }
+
+        .card-link:hover {
+            transform: translateY(-10px) scale(1.04);
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary);
+            color: inherit;
+        }
+
+        .icon-box {
+            width: 54px;
+            height: 54px;
+            min-width: 54px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            transition: transform 0.3s ease;
+        }
+
+        .card-link:hover .icon-box {
+            transform: scale(1.2) rotate(15deg);
+        }
+
+        .card-info h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-title);
+            margin-bottom: 4px;
+        }
+
+        .card-info p {
+            font-size: 14px;
+            color: var(--text-body);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Module Colors */
+        .color-hr {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #166534;
+        }
+
+        .color-att {
+            background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%);
+            color: #854d0e;
+        }
+
+        .color-est {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            color: #075985;
+        }
+
+        .color-pro {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        .color-sys {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            color: #6b21a8;
+        }
+
+        .color-log {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: #374151;
+        }
+
+        .user-pill {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-icon {
+            color: #ef4444;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-minimal {
+            text-align: center;
+            padding: 40px 0;
+            font-size: 12px;
+            color: #9ca3af;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+
+    <nav class="nav-header">
+        <div class="container-main d-flex justify-content-between align-items-center">
+            <div class="fw-bold text-primary fs-5 d-flex align-items-center gap-2">
+                <i class="fas fa-layer-group"></i> CMMS <span class="text-dark">TB2</span>
+            </div>
+            <div class="user-pill shadow-sm">
+                <span class="fw-semibold">{{ session.full_name or session.username }}</span>
+                <div class="vr"></div>
+                <a href="{{ url_for('auth.logout') }}" class="logout-icon" title="Đăng xuất">
+                    <i class="fas fa-power-off"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-main">
+        <section class="welcome-section">
+            <h1 class="welcome-title">Bảng điều khiển trung tâm</h1>
+            <p class="text-muted">Xin chào <b>{{ session.full_name or session.username }}</b>. Vui lòng
+                chọn phân hệ nghiệp vụ để tiếp tục thực hiện công việc.</p>
+        </section>
+
+        <div class="dashboard-grid">
+            <a href="/dashboard/hr" class="card-link">
+                <div class="icon-box color-hr"><i class="fas fa-id-card-alt"></i></div>
+                <div class="card-info">
+                    <h3>Nhân sự & Hồ sơ</h3>
+                    <p>Quản lý dữ liệu cán bộ, hợp đồng và hồ sơ công tác.</p>
+                </div>
+            </a>
+
+            <a href="/dashboard/attendance" class="card-link">
+                <div class="icon-box color-att"><i class="fas fa-user-clock"></i></div>
+                <div class="card-info">
+                    <h3>Chấm công & Phê duyệt</h3>
+                    <p>Quản lý thời gian biểu, phê duyệt tăng ca và báo cáo.</p>
+                </div>
+            </a>
+
+            <a href="/estimation/" class="card-link">
+                <div class="icon-box color-est"><i class="fas fa-calculator"></i></div>
+                <div class="card-info">
+                    <h3>Dự toán Chi phí</h3>
+                    <p>Tính toán định mức nhân công và vật tư bảo dưỡng.</p>
+                </div>
+            </a>
+
+            <a href="/procurement/" class="card-link">
+                <div class="icon-box color-pro"><i class="fas fa-shopping-bag"></i></div>
+                <div class="card-info">
+                    <h3>Mua sắm & Đấu thầu</h3>
+                    <p>Quản lý kế hoạch lựa chọn nhà thầu và các gói thầu.</p>
+                </div>
+            </a>
+
+            <a href="/dashboard/accounts" class="card-link">
+                <div class="icon-box color-sys"><i class="fas fa-sliders"></i></div>
+                <div class="card-info">
+                    <h3>Cấu hình hệ thống</h3>
+                    <p>Quản trị tài khoản, phân quyền và cài đặt chung.</p>
+                </div>
+            </a>
+
+            <a href="/procurement/logs" class="card-link">
+                <div class="icon-box color-log"><i class="fas fa-terminal"></i></div>
+                <div class="card-info">
+                    <h3>Nhật ký thao tác</h3>
+                    <p>Truy vết lịch sử hoạt động của người dùng hệ thống.</p>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <footer class="footer-minimal">
+        <div class="container-main">
+            <div>Hệ thống Quản trị CMMS Nhà máy Nhiệt điện Thái Bình 2</div>
+            <div class="mt-1 small">© 2026 Bản quyền thuộc về Nhà máy Nhiệt điện Thái Bình 2 - Tác giả: Nguyễn Anh Tuấn
+            </div>
+        </div>
+    </footer>
+
+    <!-- Only essential JS loaded at bottom -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+  <h4>📋 Gán nhân viên vào Kíp (Dual List)</h4>
+  <div class="user-info">
+    👤 {{ session.full_name or session.username }} |
+    <a href="{{ url_for('auth.logout') }}">Đăng xuất</a>
+  </div>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="btn btn-secondary btn-sm mb-3">← Quay về Dashboard Chấm công</a>
+
+<!-- Form chọn Kíp và Phòng -->
+<form method="GET" id="filter-form">
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <label>Chọn Kíp:</label>
+      <select name="crew_id" class="form-control" onchange="document.getElementById('filter-form').submit()">
+        <option value="">-- Chọn Kíp --</option>
+        {% for crew in crews %}
+        <option value="{{ crew.CrewID }}" {% if selected_crew_id == crew.CrewID|string %}selected{% endif %}>
+          {{ crew.CrewName }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label>Lọc theo Phòng/Đơn vị:</label>
+      <select name="department_code" class="form-control" onchange="document.getElementById('filter-form').submit()">
+        <option value="">-- Tất cả --</option>
+        {% for dept in departments %}
+        <option value="{{ dept.DepartmentCode }}" {% if selected_department_code == dept.DepartmentCode %}selected{% endif %}>
+          {{ dept.DepartmentName }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+</form>
+
+{% if selected_crew_id %}
+<form method="POST">
+  <input type="hidden" name="crew_id" value="{{ selected_crew_id }}">
+  <input type="hidden" name="department_code" value="{{ selected_department_code }}">
+
+  <div class="row">
+    <div class="col-md-5">
+      <label>Tìm kiếm nhân viên:</label>
+      <input type="text" id="searchInput" class="form-control mb-2" onkeyup="filterEmployees()">
+
+      <select id="available_employees" multiple class="form-control" size="15">
+        {% for emp in employees if emp.EmployeeID not in assigned_employee_ids %}
+        <option value="{{ emp.EmployeeID }}">{{ emp.FullName }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2 text-center align-self-center">
+      <button type="button" class="btn btn-primary mb-2" onclick="moveSelected('available_employees', 'assigned_employees')">>></button><br>
+      <button type="button" class="btn btn-secondary" onclick="moveSelected('assigned_employees', 'available_employees')"><<</button>
+    </div>
+
+    <div class="col-md-5">
+      <label>Nhân viên đã gán:</label>
+      <select name="assigned_employee_ids" id="assigned_employees" multiple class="form-control" size="15">
+        {% for emp in employees if emp.EmployeeID in assigned_employee_ids %}
+        <option value="{{ emp.EmployeeID }}">{{ emp.FullName }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="mt-4 text-center">
+    <button type="submit" class="btn btn-success">💾 Lưu nhân viên cho Kíp</button>
+  </div>
+</form>
+{% elif crew_id %}
+<div class="alert alert-warning">⚠️ Không tìm thấy nhân viên nào phù hợp với bộ lọc.</div>
+{% endif %}
+
+<script>
+function moveSelected(fromId, toId) {
+    const from = document.getElementById(fromId);
+    const to = document.getElementById(toId);
+    Array.from(from.selectedOptions).forEach(option => {
+        to.appendChild(option);
+    });
+}
+
+function filterEmployees() {
+    const input = document.getElementById("searchInput");
+    const filter = input.value.toUpperCase();
+    const select = document.getElementById("available_employees");
+    const options = select.getElementsByTagName("option");
+
+    for (let i = 0; i < options.length; i++) {
+        const txtValue = options[i].textContent || options[i].innerText;
+        options[i].style.display = txtValue.toUpperCase().includes(filter) ? "" : "none";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.querySelector("form[method='POST']");
+    if (form) {
+        form.addEventListener("submit", function() {
+            const assigned = document.getElementById("assigned_employees");
+            for (let i = 0; i < assigned.options.length; i++) {
+                assigned.options[i].selected = true;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

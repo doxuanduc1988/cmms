@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Biểu đồ công theo ngày{% endblock %}
+{% block breadcrumb %}Biểu đồ theo ngày{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-info-soft"><i class="fas fa-chart-line"></i></div>
+    <h2>Biểu đồ công trung bình theo ngày — Tháng {{ month }}/{{ year }}</h2>
+  </div>
+  <p class="page-desc">Xu hướng số công trung bình qua từng ngày trong tháng</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<div class="filter-card">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-auto">
+      <label class="form-label">Tháng</label>
+      <select name="month" class="form-select">
+        {% for m in range(1, 13) %}
+        <option value="{{ m }}" {% if m == month %}selected{% endif %}>Tháng {{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">Năm</label>
+      <input type="number" name="year" class="form-control" value="{{ year }}">
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Xem</button>
+    </div>
+  </form>
+</div>
+
+<div class="d-flex justify-content-center mb-4">
+  <div class="view-switch">
+    <a href="{{ url_for('attendance_avg_shift.attendance_avg_by_shift', month=month, year=year) }}">Theo Ca</a>
+    <a href="{{ url_for('attendance_avg_shift.attendance_line_by_day', month=month, year=year) }}" class="active">Theo Ngày</a>
+    <a href="{{ url_for('attendance_avg_shift.attendance_heatmap', month=month, year=year) }}">Heatmap</a>
+  </div>
+</div>
+
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-chart-line text-info"></i> Biểu đồ công theo ngày</h5>
+  </div>
+  <div class="chart-container">
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <canvas id="lineChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  new Chart(document.getElementById('lineChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: {{ labels | tojson }},
+      datasets: [{
+        label: 'Công trung bình theo ngày',
+        data: {{ values | tojson }},
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.05)',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: '#2563eb',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }, title: { display: true, text: 'Số công trung bình mỗi ngày', font: { size: 14, weight: '600' } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Số công' } },
+        x: { grid: { display: false }, title: { display: true, text: 'Ngày' } }
+      }
+    }
+  });
+</script>
+{% endblock %}

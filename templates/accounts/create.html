@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Tạo tài khoản mới{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3>➕ Tạo tài khoản người dùng</h3>
+  <form method="POST">
+    <div class="mb-3">
+      <label>Mã nhân viên (CCCD)</label>
+      <input name="EmployeeID" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label>Họ tên</label>
+      <input name="FullName" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label>Tài khoản đăng nhập</label>
+      <input name="Username" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label>Mật khẩu</label>
+      <input type="password" name="Password" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label>Email</label>
+      <input name="Email" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label>Điện thoại</label>
+      <input name="Phone" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label>Vai trò (Giữ Ctrl để chọn nhiều)</label>
+      <select name="RoleIDs" class="form-select" multiple>
+        {% for role in roles %}
+        <option value="{{ role.RoleID }}">{{ role.RoleName }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Trạng thái</label>
+      <select name="Status" class="form-select">
+        <option value="active">Đang hoạt động</option>
+        <option value="locked">Bị khoá</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-success">💾 Tạo</button>
+    <a href="{{ url_for('account.list_accounts') }}" class="btn btn-secondary">↩️ Quay lại</a>
+  </form>
+</div>
+{% endblock %}

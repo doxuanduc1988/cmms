@@ -1,0 +1,47 @@
+{% extends "estimation/dashboard.html" %}
+{% block est_content %}
+<h2 class="page-title">Tạo phiếu dự toán mới</h2>
+
+<div class="form-card" style="max-width: 650px;">
+    <form method="POST">
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Mã phiếu</label>
+                <input type="text" name="SheetCode" class="form-control" required placeholder="VD: DT-2025-001">
+            </div>
+            <div class="col-md-8">
+                <label class="form-label fw-bold">Tên phiếu dự toán</label>
+                <input type="text" name="SheetName" class="form-control" required placeholder="VD: Dự toán bảo dưỡng lò hơi T5/2025">
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-12">
+                <label class="form-label fw-bold">Tên công trình / hạng mục</label>
+                <input type="text" name="ProjectName" class="form-control" placeholder="VD: Bảo dưỡng cấp C Tổ máy 1">
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Ngày tạo</label>
+                <input type="date" name="CreatedAt" class="form-control" value="{{ now_date }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Trạng thái</label>
+                <select name="Status" class="form-select">
+                    <option value="Draft">Nháp</option>
+                    <option value="Submitted">Đã gửi</option>
+                    <option value="Approved">Đã duyệt</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Ghi chú</label>
+            <textarea name="Notes" class="form-control" rows="3" placeholder="Ghi chú thêm..."></textarea>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Tạo và thêm hạng mục</button>
+            <a href="{{ url_for('estimation.list_sheets') }}" class="btn btn-outline">Huỷ</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

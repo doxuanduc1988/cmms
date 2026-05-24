@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">🔐 Danh sách vai trò</h2>
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Tên vai trò</th>
+                <th>Mô tả</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for role in roles %}
+            <tr>
+                <td>{{ role.RoleID }}</td>
+                <td>{{ role.RoleName }}</td>
+                <td>{{ role.Description or "—" }}</td>
+                <td>
+                    <a href="{{ url_for('role.edit_role', role_id=role.RoleID) }}" class="btn btn-sm btn-primary">✏️ Sửa</a>
+                    <a href="{{ url_for('role.edit_permissions', role_id=role.RoleID) }}" class="btn btn-sm btn-secondary">✅ Phân quyền</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

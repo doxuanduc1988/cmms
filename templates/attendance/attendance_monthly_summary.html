@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% block title %}Tổng hợp công theo tháng{% endblock %}
+{% block breadcrumb %}Tổng hợp công tháng{% endblock %}
+
+{% block extra_css %}
+<style>
+  .monthly-table thead th {
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+    z-index: 10;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--secondary);
+    padding: 12px 8px;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+  }
+  .monthly-table tbody td {
+    padding: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 12px;
+    vertical-align: middle;
+  }
+  .monthly-table tbody tr:hover { background-color: #f8fafc; }
+  .sticky-col-stt { position: sticky; left: 0; background: inherit; z-index: 4; min-width: 40px; }
+  .sticky-col-id { position: sticky; left: 40px; background: inherit; z-index: 4; min-width: 50px; }
+  .sticky-col-name { position: sticky; left: 90px; background: inherit; z-index: 4; min-width: 240px; white-space: nowrap; }
+  .sticky-col-dept { position: sticky; left: 330px; background: inherit; z-index: 4; min-width: 100px; white-space: nowrap; }
+  thead .sticky-col-stt, thead .sticky-col-id, thead .sticky-col-name, thead .sticky-col-dept { z-index: 12; }
+  .cell-work { background-color: #ffffff; }
+  .cell-ot { background-color: #fef9c3; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-primary-soft"><i class="fas fa-calendar-days"></i></div>
+    <h2>Tổng hợp công theo tháng</h2>
+  </div>
+  <p class="page-desc">Bảng chi tiết công và OT theo từng ngày cho tất cả nhân viên</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<!-- Filter -->
+<div class="filter-card">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-auto">
+      <label class="form-label">Tháng</label>
+      <select name="month" class="form-select">
+        {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>Tháng {{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">Năm</label>
+      <select name="year" class="form-select">
+        {% for y in range(2022, 2031) %}
+          <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">Phòng / PX</label>
+      <select name="department" class="form-select">
+        <option value="">-- Tất cả --</option>
+        {% for code, name in department_list %}
+          <option value="{{ code }}" {% if request.args.get('department') == code %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">Kíp</label>
+      <select name="crew" class="form-select">
+        <option value="">-- Tất cả --</option>
+        {% for id, name in crew_list %}
+          <option value="{{ id }}" {% if request.args.get('crew') == id|string %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">Ca</label>
+      <select name="shift" class="form-select">
+        <option value="">-- Tất cả --</option>
+        {% for sid, sname in shift_list %}
+          <option value="{{ sid }}" {% if request.args.get('shift') == sid|string %}selected{% endif %}>{{ sname }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Xem</button>
+    </div>
+    <div class="col-auto">
+      <a href="{{ url_for('attendance_export.export_excel', month=month, year=year, department=department, crew=crew, shift=shift) }}" class="btn btn-secondary" style="color:var(--success);">
+        <i class="fas fa-file-excel"></i> Xuất Excel
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Data Table -->
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-table text-primary"></i> Bảng công chi tiết</h5>
+    <div class="d-flex align-items-center gap-3 small text-muted">
+      <span><span class="d-inline-block rounded" style="width:12px;height:12px;background:#fef9c3;border:1px solid #fde68a;"></span> OT</span>
+      <span><span class="d-inline-block rounded" style="width:12px;height:12px;background:#fff;border:1px solid #e2e8f0;"></span> Công</span>
+    </div>
+  </div>
+  <div class="data-card-body">
+    <div class="table-responsive" style="max-height: 500px; overflow: auto;">
+      <table class="monthly-table text-center" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th class="sticky-col-stt">#</th>
+            <th class="sticky-col-id">Mã NV</th>
+            <th class="sticky-col-name text-start">Họ tên</th>
+            <th class="sticky-col-dept">Phòng/PX</th>
+            {% for d in range(1, 32) %}
+              <th>{{ d }}</th>
+            {% endfor %}
+            <th style="min-width:60px;">Tổng</th>
+            <th style="min-width:60px;">OT (h)</th>
+          </tr>
+          <tr style="background:#fffbeb;">
+            <td colspan="4" class="sticky-col-stt text-start fw-bold" style="background:#fffbeb;left:0;z-index:12;">TỔNG NGÀY</td>
+            {% set sum_work = namespace(v=0) %}
+            {% set sum_ot = namespace(v=0) %}
+            {% for d in range(1, 32) %}
+              {% set day_work = data.values() | map(attribute='days') | map(attribute=d) | map(attribute='work') | sum %}
+              {% set day_ot = data.values() | map(attribute='days') | map(attribute=d) | map(attribute='ot') | sum %}
+              {% set sum_work.v = sum_work.v + day_work %}
+              {% set sum_ot.v = sum_ot.v + day_ot %}
+              <td>{{ day_work }}<br><small class="text-muted">({{ day_ot }})</small></td>
+            {% endfor %}
+            <td><strong>{{ sum_work.v }}</strong></td>
+            <td><strong>{{ sum_ot.v }}</strong></td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp_id, info in data.items() %}
+            <tr>
+              <td class="sticky-col-stt">{{ loop.index }}</td>
+              <td class="sticky-col-id"><strong>{{ emp_id }}</strong></td>
+              <td class="sticky-col-name text-start">{{ info.name }}</td>
+              <td class="sticky-col-dept">{{ info.department }}</td>
+              {% for day in range(1, 32) %}
+                {% set w = info.days[day].work %}
+                {% set ot = info.days[day].ot %}
+                {% if w > 0 or ot > 0 %}
+                  {% if ot > 0 and w == 0 %}
+                    <td class="cell-ot" title="OT: {{ ot }}h">OT:{{ ot }}</td>
+                  {% elif ot > 0 and w > 0 %}
+                    <td class="cell-ot" title="Công: {{ w }}, OT: {{ ot }}h">{{ w }}<br><small>({{ ot }})</small></td>
+                  {% else %}
+                    <td class="cell-work" title="Công: {{ w }}">{{ w }}</td>
+                  {% endif %}
+                {% else %}
+                  <td></td>
+                {% endif %}
+              {% endfor %}
+              <td><strong>{{ info.total_work }}</strong></td>
+              <td><strong>{{ info.total_ot }}</strong></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

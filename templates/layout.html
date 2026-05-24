@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block breadcrumb %}{{ self.title() if self.title else 'Quản trị' }}{% endblock %}
+
+{% block content %}
+    {% block body %}{% endblock %}
+{% endblock %}

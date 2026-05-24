@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Chỉnh sửa chấm công{% endblock %}
+{% block breadcrumb %}Chỉnh sửa chấm công{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-warning-soft"><i class="fas fa-pen-to-square"></i></div>
+    <h2>Chỉnh sửa chấm công</h2>
+  </div>
+  <p class="page-desc">{{ attendance.EmployeeID }} — {{ attendance.employee.FullName if attendance.employee else 'Không rõ tên' }} · Ngày {{ attendance.Date.strftime('%d/%m/%Y') }}</p>
+</div>
+
+<a href="{{ url_for('attendance_check.check_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay lại tra cứu
+</a>
+
+<div class="form-card">
+  <h5 class="fw-bold mb-4"><i class="fas fa-edit text-warning me-2"></i>Thông tin chấm công</h5>
+  <form method="POST">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Giờ vào</label>
+        <input type="time" class="form-control" name="check_in" value="{{ attendance.CheckInTime }}" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Giờ ra</label>
+        <input type="time" class="form-control" name="check_out" value="{{ attendance.CheckOutTime }}" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Trạng thái</label>
+        <select name="status" class="form-select">
+          {% for opt in ['Working', 'OT', 'Leave', 'Absent', 'SickLeave', 'Holiday', 'CompensatoryLeave'] %}
+            <option value="{{ opt }}" {% if opt == attendance.Status %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Ghi chú</label>
+        <input type="text" class="form-control" name="note" value="{{ attendance.Note }}">
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary"><i class="fas fa-save me-1"></i> Lưu thay đổi</button>
+        <a href="{{ url_for('attendance_check.check_attendance') }}" class="btn btn-secondary">Hủy</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

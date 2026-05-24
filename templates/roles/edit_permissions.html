@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Gán quyền cho vai trò: {{ role.RoleName }}{% endblock %}
+
+{% block content %}
+<h2>🔧 Gán quyền cho vai trò: <span style="color: teal;">{{ role.RoleName }}</span></h2>
+
+<form method="POST">
+  <table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Module</th>
+        <th>🔍 Xem</th>
+        <th>➕ Thêm</th>
+        <th>✏️ Sửa</th>
+        <th>🗑️ Xoá</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for module in modules %}
+      <tr>
+        <td>{{ module.ModuleName }}</td>
+        {% for action in ['view', 'create', 'edit', 'delete'] %}
+        <td style="text-align: center;">
+          {% set perm = permission_lookup.get((module.ModuleID, action)) %}
+          {% if perm %}
+            <input type="checkbox" name="permissions" value="{{ perm.PermissionID }}"
+              {% if perm.PermissionID in current_permission_ids %}checked{% endif %}>
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <br>
+  <button type="submit">💾 Lưu quyền</button>
+  <a href="{{ url_for('role.list_roles') }}">⬅️ Quay lại</a>
+</form>
+{% endblock %}

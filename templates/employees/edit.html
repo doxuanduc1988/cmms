@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Chỉnh sửa tài khoản nhân viên{% endblock %}
+
+{% block breadcrumb %}Nhân sự & Hồ sơ{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-3">
+    <div class="bg-warning bg-gradient text-white rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px;">
+        <i class="fas fa-user-edit fs-4"></i>
+    </div>
+    <div>
+        <h2 class="fw-bold mb-0">Chỉnh sửa tài khoản nhân viên</h2>
+        <p class="text-muted mb-0 small">Cập nhật thông tin tài khoản và quyền hạn của nhân viên <strong>{{ emp.FullName }}</strong>.</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4" style="max-width: 800px;">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold text-warning">Thông tin tài khoản</h5>
+    </div>
+    <div class="card-body p-4">
+        <form method="POST">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Mã nhân viên</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-0 ps-0"><i class="fas fa-id-card text-muted"></i></span>
+                            <input type="text" value="{{ emp.EmployeeID }}" class="form-control border-0 bg-transparent fw-bold p-0" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Tên đăng nhập</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-0 ps-0"><i class="fas fa-user-tag text-muted"></i></span>
+                            <input type="text" value="{{ emp.Username }}" class="form-control border-0 bg-transparent fw-bold p-0" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Họ và tên</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-user text-muted"></i></span>
+                            <input type="text" name="FullName" class="form-control bg-light border-0" value="{{ emp.FullName }}" placeholder="Nhập họ tên...">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Vai trò hệ thống (Chọn nhiều)</label>
+                        <select name="RoleIDs" class="form-select bg-light border-0" multiple style="height: 120px;">
+                            {% set emp_role_ids = emp.roles | map(attribute='RoleID') | list %}
+                            {% for role in roles %}
+                            <option value="{{ role.RoleID }}" {% if role.RoleID in emp_role_ids %}selected{% endif %}>{{ role.RoleName }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text smaller text-muted">Giữ phím <b>Ctrl</b> để chọn hoặc bỏ chọn nhiều vai trò.</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Phòng ban / Bộ phận</label>
+                        <select name="DepartmentCode" class="form-select bg-light border-0">
+                            {% for dept in departments %}
+                            <option value="{{ dept.DepartmentCode }}" {% if dept.DepartmentCode == emp.DepartmentCode %}selected{% endif %}>{{ dept.DepartmentName }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Trạng thái tài khoản</label>
+                        <select name="Status" class="form-select bg-light border-0">
+                            <option value="Active" {% if emp.Status == 'Active' %}selected{% endif %}>Hoạt động</option>
+                            <option value="Inactive" {% if emp.Status == 'Inactive' %}selected{% endif %}>Tạm khoá</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4 text-muted opacity-25">
+
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{{ url_for('employee.list_employees') }}" class="btn btn-light px-4">
+                    <i class="fas fa-times me-1"></i> Hủy bỏ
+                </a>
+                <button type="submit" class="btn btn-warning px-4 shadow-sm text-dark">
+                    <i class="fas fa-save me-1"></i> Cập nhật tài khoản
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

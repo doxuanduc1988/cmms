@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Nhật ký thao tác - Mua sắm & Đấu thầu{% endblock %}
+
+{% block breadcrumb %}Nhật ký thao tác{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex align-items-center justify-content-between">
+    <div>
+        <div class="page-title">
+            <div class="page-icon bg-info-soft">
+                <i class="fas fa-history"></i>
+            </div>
+            <h2>Nhật ký thao tác</h2>
+        </div>
+        <p class="page-desc text-muted">Theo dõi các thay đổi và thao tác trong phân hệ Mua sắm - Đấu thầu.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('procurement.list_packages') }}" class="back-nav">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="filter-card mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label">Phân hệ</label>
+            <select name="module" class="form-select">
+                <option value="">-- Tất cả phân hệ --</option>
+                <option value="ExpertGroup" {% if request.args.get('module') == 'ExpertGroup' %}selected{% endif %}>Tổ chuyên gia</option>
+                <option value="AppraisalGroup" {% if request.args.get('module') == 'AppraisalGroup' %}selected{% endif %}>Tổ thẩm định</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Hành động</label>
+            <select name="action" class="form-select">
+                <option value="">-- Tất cả hành động --</option>
+                <option value="ADD" {% if request.args.get('action') == 'ADD' %}selected{% endif %}>Thêm mới</option>
+                <option value="DELETE" {% if request.args.get('action') in ['DELETE', 'REMOVE'] %}selected{% endif %}>Xoá</option>
+                <option value="UPDATE" {% if request.args.get('action') in ['UPDATE', 'EDIT'] %}selected{% endif %}>Cập nhật</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mã nhân viên (Actor)</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fas fa-user-tag text-muted"></i></span>
+                <input type="text" name="employee" class="form-control border-start-0" 
+                       placeholder="Nhập mã nhân viên hoặc username..." 
+                       value="{{ request.args.get('employee', '') }}">
+            </div>
+        </div>
+        <div class="col-md-2 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-filter"></i> Lọc
+            </button>
+            {% if request.args.get('module') or request.args.get('action') or request.args.get('employee') %}
+            <a href="{{ url_for('procurement.procurement_logs') }}" class="btn btn-secondary" title="Xoá lọc">
+                <i class="fas fa-rotate-left"></i>
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Logs Table Card -->
+<div class="data-card">
+    <div class="data-card-header">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0"><i class="fas fa-list-ul me-2"></i> Danh sách bản ghi nhật ký</h5>
+            <span class="badge bg-light text-muted border fw-normal">{{ logs|length }} dòng gần nhất</span>
+        </div>
+    </div>
+    <div class="data-card-body">
+        <div class="table-responsive">
+            <table class="pro-table">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 50px;">STT</th>
+                        <th>Người thao tác</th>
+                        <th class="text-center">Hành động</th>
+                        <th>Phân hệ</th>
+                        <th>Chi tiết thao tác</th>
+                        <th class="text-center">Thời điểm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="text-center text-muted small">{{ loop.index }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user-circle text-secondary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ log.ActorFullName or 'Người dùng hệ thống' }}</div>
+                                    <div class="text-muted extra-small" style="font-size: 11px;">Mã: {{ log.ActorCode or log.EmployeeID or '—' }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            {% set action = (log.Action or '').upper() %}
+                            {% if action == 'ADD' %}
+                                <span class="badge-status badge-approved">
+                                    <i class="fas fa-plus-circle"></i> {{ log.ActionVN or 'Thêm' }}
+                                </span>
+                            {% elif action in ['DELETE', 'REMOVE'] %}
+                                <span class="badge-status badge-absent">
+                                    <i class="fas fa-trash-can"></i> {{ log.ActionVN or 'Xoá' }}
+                                </span>
+                            {% elif action in ['UPDATE', 'EDIT'] %}
+                                <span class="badge-status badge-ot">
+                                    <i class="fas fa-pen-to-square"></i> {{ log.ActionVN or 'Sửa' }}
+                                </span>
+                            {% else %}
+                                <span class="badge-status badge-pending">
+                                    {{ log.ActionVN or log.Action or '—' }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="fw-medium text-dark">{{ log.ModuleVN or log.Module or '—' }}</span>
+                        </td>
+                        <td>
+                            <div class="small" style="max-width: 400px; white-space: normal; line-height: 1.4;">
+                                {% if "||" in (log.DetailVN or '') %}
+                                    {% set parts = log.DetailVN.split("||") %}
+                                    <span class="text-primary fw-bold">{{ parts[0]|trim }}</span> 
+                                    <span class="text-muted">→</span> 
+                                    <span class="fw-semibold">{{ parts[1]|trim }}</span>
+                                {% else %}
+                                    {{ log.DetailVN or log.Description or '—' }}
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="text-dark fw-medium small">
+                                {% if log.Timestamp %}
+                                    {{ log.Timestamp.strftime("%d/%m/%Y") }}
+                                {% else %}—{% endif %}
+                            </div>
+                            <div class="text-muted extra-small" style="font-size: 11px;">
+                                {% if log.Timestamp %}
+                                    {{ log.Timestamp.strftime("%H:%M:%S") }}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fas fa-clipboard-question"></i>
+                                <p>Không tìm thấy bản ghi nhật ký nào phù hợp.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .extra-small {
+        font-size: 0.75rem;
+    }
+    .bg-info-soft {
+        background-color: #e0f2fe;
+        color: #0ea5e9;
+    }
+    /* Đảm bảo table text không bị quá sát */
+    .pro-table tbody td {
+        padding: 14px 16px;
+    }
+</style>
+{% endblock %}

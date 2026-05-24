@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Hồ sơ: {{ profile.FullName }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-primary">👤 Chi tiết hồ sơ nhân sự</h2>
+            <p class="text-muted">Nhân viên: <span class="fw-bold text-dark">{{ profile.FullName }}</span> | Mã NV: {{ profile.EmployeeID }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('hr.list_profiles') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="fas fa-list me-2"></i>Danh sách
+            </a>
+            {% if has_permission('hr', 'update') %}
+            {% if has_permission('hr', 'update') %}
+<a href="{{ url_for('hr.edit_profile', employee_id=profile.EmployeeID) }}" class="btn btn-warning rounded-pill px-4 shadow-sm">
+                <i class="fas fa-edit me-2"></i>Chỉnh sửa
+            </a>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền sửa" class="btn btn-warning rounded-pill px-4 shadow-sm">
+                <i class="fas fa-edit me-2"></i>Chỉnh sửa
+            </button>
+{% endif %}
+            {% endif %}
+            <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="collapse" data-bs-target="#printSection">
+                <i class="fas fa-print me-2"></i>In hồ sơ
+            </button>
+        </div>
+    </div>
+
+    <!-- Print Options (Collapsible) -->
+    <div class="collapse mb-4" id="printSection">
+        <div class="card border-0 shadow-sm rounded-4 bg-light">
+            <div class="card-body p-4">
+                <form method="get" action="{{ url_for('hr_report_resume.print_resume', employee_id=profile.EmployeeID) }}" target="_blank">
+                    <h6 class="fw-bold mb-3">📄 Tùy chọn in sơ yếu lý lịch</h6>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-9">
+                            <div class="d-flex flex-wrap gap-4">
+                                <div class="form-check"><input class="form-check-input" type="checkbox" name="sections" value="profile" id="s_profile" checked><label class="form-check-label small" for="s_profile">Thông tin cá nhân</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" name="sections" value="education" id="s_education" checked><label class="form-check-label small" for="s_education">Đào tạo</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" name="sections" value="work" id="s_work" checked><label class="form-check-label small" for="s_work">Công tác</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" name="sections" value="salary" id="s_salary" checked><label class="form-check-label small" for="s_salary">Lương</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" name="sections" value="family" id="s_family" checked><label class="form-check-label small" for="s_family">Gia đình</label></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">Tạo bản in</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <!-- Header Info -->
+        <div class="card-body bg-white p-4 border-bottom">
+            <div class="d-flex align-items-center gap-4">
+                <img src="{% if profile.Photo %}{{ url_for('static', filename='uploads/hr_pics/' ~ profile.Photo) }}{% else %}{{ url_for('static', filename='no-photo.png') }}{% endif %}" 
+                     class="rounded-4 shadow-sm object-fit-cover border border-4 border-white" 
+                     style="width: 100px; height: 130px; cursor: pointer;"
+                     data-bs-toggle="modal" data-bs-target="#photoModal">
+                <div>
+                    <h4 class="fw-bold mb-1">{{ profile.FullName }}</h4>
+                    <div class="d-flex gap-3 text-muted small">
+                        <span><i class="fas fa-id-badge me-1"></i> {{ profile.EmployeeID }}</span>
+                        <span><i class="fas fa-building me-1"></i> {{ profile.department.DepartmentName or profile.DepartmentCode }}</span>
+                        <span><i class="fas fa-user-tag me-1"></i> {{ profile.JobPosition.JobPositionName or 'Chưa cập nhật' }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-success-subtle text-success rounded-pill px-3">{{ profile.InsuranceStatus or 'Đang làm việc' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="card-header bg-light border-0 p-0">
+            <ul class="nav nav-tabs nav-fill border-0 scroll-x" id="hrDetailTabs" role="tablist">
+                <li class="nav-item"><a class="nav-link active py-3 fw-semibold border-0" data-bs-toggle="tab" href="#v-personal">Cá nhân</a></li>
+                <li class="nav-item"><a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#v-contact">Liên hệ</a></li>
+                <li class="nav-item"><a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#v-work">Công tác & HĐ</a></li>
+                <li class="nav-item"><a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#v-salary">Lương</a></li>
+                <li class="nav-item"><a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#v-leave">Nghỉ phép</a></li>
+                <li class="nav-item"><a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#v-education">Học vấn</a></li>
+                <li class="nav-item"><a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#v-dependents">Phụ thuộc</a></li>
+                <li class="nav-item"><a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#v-award">Khen thưởng</a></li>
+                <li class="nav-item"><a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#v-others">Khác</a></li>
+            </ul>
+        </div>
+
+        <div class="card-body p-4 bg-white">
+            <div class="tab-content">
+                <!-- 1. Cá nhân -->
+                <div class="tab-pane fade show active" id="v-personal">
+                    <h5 class="fw-bold mb-4 text-dark border-start border-primary border-4 ps-3">Thông tin cá nhân</h5>
+                    <div class="row g-4">
+                        <div class="col-md-4"><label class="text-muted small d-block">Họ và tên</label><span class="fw-bold fs-5">{{ profile.FullName }}</span></div>
+                        <div class="col-md-2"><label class="text-muted small d-block">Giới tính</label><span class="fw-bold">{{ profile.Gender or 'N/A' }}</span></div>
+                        <div class="col-md-2"><label class="text-muted small d-block">Ngày sinh</label><span class="fw-bold">{{ profile.DateOfBirth or 'N/A' }}</span></div>
+                        <div class="col-md-4"><label class="text-muted small d-block">Nơi sinh</label><span class="fw-bold">{{ profile.PlaceOfBirth or 'N/A' }}</span></div>
+                        <div class="col-md-3"><label class="text-muted small d-block">Quốc tịch</label><span class="fw-bold">{{ profile.Nationality or 'N/A' }}</span></div>
+                        <div class="col-md-3"><label class="text-muted small d-block">Dân tộc</label><span class="fw-bold">{{ profile.Ethnicity or 'N/A' }}</span></div>
+                        <div class="col-md-3"><label class="text-muted small d-block">Mã cán bộ</label><span class="fw-bold">{{ profile.StaffCode or 'N/A' }}</span></div>
+                        <div class="col-md-3"><label class="text-muted small d-block">Kết hôn</label><span class="fw-bold">{{ profile.MaritalStatus or 'N/A' }}</span></div>
+                    </div>
+                </div>
+
+                <!-- 2. Liên hệ -->
+                <div class="tab-pane fade" id="v-contact">
+                    <h5 class="fw-bold mb-4 text-dark border-start border-primary border-4 ps-3">Liên hệ & Địa chỉ</h5>
+                    <div class="row g-4">
+                        <div class="col-md-6"><label class="text-muted small d-block">Số điện thoại</label><span class="fw-bold fs-5 text-primary">{{ profile.Phone or 'N/A' }}</span></div>
+                        <div class="col-md-6"><label class="text-muted small d-block">Email</label><span class="fw-bold">{{ profile.Email or 'N/A' }}</span></div>
+                        <div class="col-12"><label class="text-muted small d-block">Địa chỉ thường trú</label><span class="fw-bold">{{ profile.ResidenceAddress or 'N/A' }}</span></div>
+                        <div class="col-md-6 mt-4"><label class="text-muted small d-block">Liên hệ khẩn cấp</label><span class="fw-bold">{{ profile.EmergencyContactName or 'N/A' }}</span></div>
+                        <div class="col-md-6 mt-4"><label class="text-muted small d-block">SĐT khẩn cấp</label><span class="fw-bold text-danger">{{ profile.EmergencyContactPhone or 'N/A' }}</span></div>
+                    </div>
+                </div>
+
+                <!-- 3. Công tác -->
+                <div class="tab-pane fade" id="v-work">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4"><label class="text-muted small d-block">Số hợp đồng</label><span class="fw-bold">{{ profile.ContractNumber or 'N/A' }}</span></div>
+                        <div class="col-md-4"><label class="text-muted small d-block">Loại hợp đồng</label><span class="fw-bold">{{ profile.ContractType or 'N/A' }}</span></div>
+                        <div class="col-md-4"><label class="text-muted small d-block">Thời gian</label><span class="fw-bold">{{ profile.StartDate or 'N/A' }} ➔ {{ profile.EndDate or 'Nay' }}</span></div>
+                    </div>
+                    <iframe src="{{ url_for('work_history.work_history_list', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="500px" class="border-0 bg-light"></iframe>
+                </div>
+
+                <!-- 4. Lương -->
+                <div class="tab-pane fade" id="v-salary">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4"><label class="text-muted small d-block">Mức lương</label><span class="fw-bold fs-4 text-success">{{ "{:,.0f}".format(profile.Salary or 0) }} VNĐ</span></div>
+                        <div class="col-md-4"><label class="text-muted small d-block">Ngạch/Bậc</label><span class="fw-bold">{{ profile.SalaryGrade or 'N/A' }}</span></div>
+                        <div class="col-md-4"><label class="text-muted small d-block">Tài khoản</label><span class="fw-bold">{{ profile.BankAccount or 'N/A' }}</span></div>
+                    </div>
+                    <iframe src="{{ url_for('salary_history.salary_history_list', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="500px" class="border-0 bg-light"></iframe>
+                </div>
+
+                <!-- 5-8 Tabs with iframes -->
+                <div class="tab-pane fade" id="v-leave"><iframe src="{{ url_for('leave.list_leave', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="600px" class="border-0"></iframe></div>
+                <div class="tab-pane fade" id="v-education"><iframe src="{{ url_for('education.education_list', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="600px" class="border-0"></iframe></div>
+                <div class="tab-pane fade" id="v-dependents"><iframe src="{{ url_for('hr_dependent.list_dependents', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="600px" class="border-0"></iframe></div>
+                <div class="tab-pane fade" id="v-award"><iframe src="{{ url_for('award_discipline.list_awards', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="600px" class="border-0"></iframe></div>
+
+                <!-- 9. Khác -->
+                <div class="tab-pane fade" id="v-others">
+                    <div class="row g-4">
+                        <div class="col-md-6"><label class="text-muted small d-block">Mã số BHXH</label><span class="fw-bold">{{ profile.InsuranceNumber or 'N/A' }}</span></div>
+                        <div class="col-md-6"><label class="text-muted small d-block">Mã số thuế</label><span class="fw-bold">{{ profile.TaxCode or 'N/A' }}</span></div>
+                        <div class="col-md-6"><label class="text-muted small d-block">Ngày thôi việc</label><span class="fw-bold text-danger">{{ profile.TerminationDate or 'Đang làm việc' }}</span></div>
+                        <div class="col-12"><label class="text-muted small d-block">Ghi chú</label><div class="p-3 bg-light rounded-3">{{ profile.Notes or 'Không có ghi chú' }}</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Photo -->
+<div class="modal fade" id="photoModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden"><div class="modal-header border-0 pb-0"><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center pt-0"><img src="{% if profile.Photo %}{{ url_for('static', filename='uploads/hr_pics/' ~ profile.Photo) }}{% else %}{{ url_for('static', filename='no-photo.png') }}{% endif %}" class="img-fluid rounded-4 shadow"></div></div></div></div>
+
+<style>
+    .nav-tabs .nav-link { color: #6c757d; border-bottom: 3px solid transparent; transition: all 0.3s ease; white-space: nowrap; }
+    .nav-tabs .nav-link.active { color: #0d6efd; background: white; border-bottom: 3px solid #0d6efd; }
+    .scroll-x { overflow-x: auto; flex-wrap: nowrap; }
+    .scroll-x::-webkit-scrollbar { height: 4px; }
+    .scroll-x::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
+</style>
+{% endblock %}

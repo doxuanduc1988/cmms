@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Danh sách hồ sơ nhân sự{% endblock %}
+{% block breadcrumb %}Nhân sự / Hồ sơ{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h3 class="fw-bold mb-0">Hồ sơ nhân sự</h3>
+    </div>
+    <div class="col-auto">
+        <div class="btn-group shadow-sm">
+            <a href="{{ url_for('hr.create_profile') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tạo hồ sơ</a>
+            <a href="{{ url_for('hr.import_excel_hr_profiles') }}" class="btn btn-success"><i class="fas fa-file-import"></i> Nhập Excel</a>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Tìm theo Mã nhân viên/Họ tên/Chức danh/Phòng..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-secondary w-100" type="submit">Tìm kiếm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Mã NV</th>
+                        <th>Họ tên</th>
+                        <th>Chức danh</th>
+                        <th>Phòng/Phân xưởng</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in profiles.items %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">{{ profile.EmployeeID }}</td>
+                        <td class="fw-semibold">{{ profile.FullName }}</td>
+                        <td><span class="small">{{ profile.JobPosition.JobPositionName }}</span></td>
+                        <td><span class="badge bg-light text-dark border">{{ profile.department.DepartmentName }}</span></td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group">
+                                <a href="{{ url_for('hr.profile_detail', employee_id=profile.EmployeeID) }}" class="btn btn-secondary btn-sm" title="Xem chi tiết"><i class="fas fa-eye text-primary"></i></a>
+                                {% if has_permission('hr', 'update') %}
+<a href="{{ url_for('hr.edit_profile', employee_id=profile.EmployeeID) }}" class="btn btn-secondary btn-sm" title="Sửa"><i class="fas fa-edit text-warning"></i></a>
+{% else %}
+<button disabled class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền sửa"><i class="fas fa-edit text-secondary"></i></button>
+{% endif %}
+                                {% if has_permission('hr', 'delete') %}
+<form action="{{ url_for('hr.delete_profile', employee_id=profile.EmployeeID) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xoá hồ sơ này?');">
+                                    <button type="submit" class="btn btn-secondary btn-sm" title="Xoá"><i class="fas fa-trash text-danger"></i></button>
+                                </form>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền xóa" type="submit" class="btn btn-secondary btn-sm" title="Xoá"><i class="fas fa-trash text-secondary"></i></button>
+{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">Không có hồ sơ nào được tìm thấy</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if profiles.pages > 1 %}
+    <div class="card-footer bg-white border-0 py-3">
+        <nav aria-label="Phân trang">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                {% if profiles.has_prev %}
+                <li class="page-item">
+                    <a class="page-link border-0 rounded-circle mx-1" href="?page={{ profiles.prev_num }}&search={{ search }}"><i class="fas fa-chevron-left"></i></a>
+                </li>
+                {% endif %}
+
+                {% for page_num in profiles.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == profiles.page %}active{% endif %}">
+                            <a class="page-link border-0 rounded-circle mx-1" href="?page={{ page_num }}&search={{ search }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link border-0 mx-1">…</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if profiles.has_next %}
+                <li class="page-item">
+                    <a class="page-link border-0 rounded-circle mx-1" href="?page={{ profiles.next_num }}&search={{ search }}"><i class="fas fa-chevron-right"></i></a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<a href="/dashboard/hr" class="btn btn-link text-decoration-none mt-3 p-0 text-muted">
+    <i class="fas fa-arrow-left me-1"></i> Quay về Dashboard Nhân sự
+</a>
+{% endblock %}

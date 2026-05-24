@@ -1,0 +1,54 @@
+# routes/auth.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import session
+
+from flask_login import login_user, logout_user, login_required
+from models.hr.employee_model import Employee
+from extensions import db
+from utils.password_utils import hash_password, check_password  # ✅ dùng bcrypt
+
+# from werkzeug.security import check_password_hash
+
+auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+
+@auth_bp.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        user = Employee.query.filter_by(Username=username).first()
+
+        if not user:
+            flash("❌ Sai tên đăng nhập", "danger")
+        elif user.Status.lower() != "active":
+            flash("⚠️ Tài khoản không hoạt động", "warning")
+        elif not check_password(password, user.PasswordHash):
+
+            flash("❌ Mật khẩu không đúng", "danger")
+        else:
+            login_user(user)
+            session["employee_id"] = user.EmployeeID
+            
+            # 🔐 Xử lý nhiều vai trò
+            user_roles = user.roles.all()
+            session["full_name"] = user.FullName or user.Username or "Chưa cập nhật"
+            session["role_name"] = ", ".join([r.RoleName for r in user_roles]) if user_roles else "Chưa phân vai"
+            session["role_id"] = user_roles[0].RoleID if user_roles else None
+            session["role"] = user_roles[0].RoleName.lower() if user_roles else ""
+            
+            session["department_code"] = user.DepartmentCode
+
+            return redirect(url_for("dashboard.dashboard"))
+
+    return render_template("auth/login.html")
+
+
+@auth_bp.route("/logout")
+@login_required
+def logout():
+    session.clear()
+    logout_user()
+    flash("🚪 Đã đăng xuất", "info")
+    return redirect(url_for("auth.login"))

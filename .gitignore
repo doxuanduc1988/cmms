@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+logs/
+*.log
+
+# Backup
+backup/
+*.bak
+*.sql
+
+# Uploads (RẤT QUAN TRỌNG)
+uploads/
+static/uploads/
+
+# DB
+*.db
+*.sqlite3
+
+# Env
+.env
+
+# System
+.vscode/
+.idea/

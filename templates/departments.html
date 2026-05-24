@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách Phòng ban</title>
+</head>
+<body>
+    <h1>Danh sách Phòng ban</h1>
+    <table border="1">
+        <tr>
+
+            <th>Mã</th>
+            <th>Tên</th>
+            <th>Mô tả</th>
+        </tr>
+        {% for d in departments %}
+        <tr>
+
+            <td>{{ d.DepartmentCode }}</td>
+            <td>{{ d.DepartmentName }}</td>
+            <td>{{ d.Description }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

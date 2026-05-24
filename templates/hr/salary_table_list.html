@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Danh sách bậc lương{% endblock %}
+{% block breadcrumb %}Nhân sự / Bậc lương{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h3 class="fw-bold mb-0">Bậc lương</h3>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('salary_table.salary_table_create') }}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus"></i> Thêm bậc lương
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4" style="width: 80px;">#</th>
+                        <th>Mã bậc</th>
+                        <th>Chức danh</th>
+                        <th>Hệ số</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in salary_table %}
+                    <tr>
+                        <td class="ps-4 text-muted small">{{ loop.index }}</td>
+                        <td class="fw-bold text-primary">{{ item.SalaryCode }}</td>
+                        <td class="fw-semibold">{{ item.Description }}</td>
+                        <td><span class="badge bg-info-soft text-info">{{ item.Coefficient }}</span></td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group">
+                                {% if has_permission('hr', 'update') %}
+<a href="{{ url_for('salary_table.salary_table_edit', code=item.SalaryCode) }}" class="btn btn-secondary btn-sm" title="Sửa">
+                                    <i class="fas fa-edit text-warning"></i>
+                                </a>
+{% else %}
+<button disabled class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền sửa">
+                                    <i class="fas fa-edit text-secondary"></i>
+                                </button>
+{% endif %}
+                                {% if has_permission('hr', 'delete') %}
+<form action="{{ url_for('salary_table.salary_table_delete', code=item.SalaryCode) }}" method="post" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn xoá bậc lương này?');">
+                                    <button type="submit" class="btn btn-secondary btn-sm" title="Xoá">
+                                        <i class="fas fa-trash text-danger"></i>
+                                    </button>
+                                </form>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền xóa" type="submit" class="btn btn-secondary btn-sm" title="Xoá">
+                                        <i class="fas fa-trash text-secondary"></i>
+                                    </button>
+{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">Không có bậc lương nào được tìm thấy</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<a href="/dashboard/hr" class="btn btn-link text-decoration-none mt-3 p-0 text-muted">
+    <i class="fas fa-arrow-left me-1"></i> Quay về Dashboard Nhân sự
+</a>
+{% endblock %}

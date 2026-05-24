@@ -1,0 +1,81 @@
+<!-- templates/crew_assignments/list.html -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý phân công Kíp - Phòng</title>
+</head>
+<body>
+    <h2>Danh sách phân công nhân sự theo Kíp</h2>
+
+    <!-- Form lọc -->
+    <form method="GET" action="{{ url_for('crew_assignments.list_crew_assignments') }}" style="margin-bottom: 20px;">
+        <label>Phòng/Phân xưởng:</label>
+        <select name="department_code">
+            <option value="">-- Tất cả --</option>
+            {% for dept in departments %}
+                <option value="{{ dept.DepartmentCode }}"
+                    {% if request.args.get('department_code') == dept.DepartmentCode %} selected {% endif %}
+                >{{ dept.DepartmentName }}</option>
+            {% endfor %}
+        </select>
+
+        <label style="margin-left:20px;">Kíp:</label>
+        <select name="crew_id">
+            <option value="">-- Tất cả --</option>
+            {% for crew in crews %}
+                <option value="{{ crew.CrewID }}"
+                    {% if request.args.get('crew_id') == crew.CrewID|string %} selected {% endif %}
+                >{{ crew.CrewName }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" style="padding: 6px 10px; margin-left:10px;">Lọc</button>
+
+        <!-- Nút Thêm mới -->
+        <a href="{{ url_for('crew_assignments.create_crew_assignment') }}" style="margin-left: 20px; padding: 8px 12px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px;">➕ Thêm mới</a>
+    </form>
+
+    <!-- Bảng danh sách -->
+    <table border="1" cellpadding="8" cellspacing="0" width="100%">
+        <thead style="background-color: #f2f2f2;">
+            <tr>
+                <th>STT</th>
+                <th>Mã nhân viên</th>
+                <th>Họ tên</th>
+                <th>Phòng/Phân xưởng</th>
+                <th>Kíp làm việc</th>
+                <th>Chức danh</th>
+                <th>Ngày bắt đầu</th>
+                <th>Ngày kết thúc</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for assignment, fullname, department_name, crew_name, jobposition_name in assignments %}
+            <tr>
+                <td align="center">{{ loop.index }}</td>
+                <td>{{ assignment.EmployeeID }}</td>
+                <td>{{ fullname }}</td>
+                <td>{{ department_name }}</td>
+                <td>{{ crew_name }}</td>
+                <td>{{ jobposition_name if jobposition_name else '' }}</td>
+                <td align="center">{{ assignment.StartDate.strftime('%d/%m/%Y') if assignment.StartDate else '' }}</td>
+                <td align="center">{{ assignment.EndDate.strftime('%d/%m/%Y') if assignment.EndDate else '' }}</td>
+                <td align="center">
+                    <a href="{{ url_for('crew_assignments.edit_crew_assignment', assignment_id=assignment.AssignmentID) }}" style="padding: 4px 8px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 4px;">✏️ Sửa</a>
+
+                    <form action="{{ url_for('crew_assignments.delete_crew_assignment', assignment_id=assignment.AssignmentID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa phân công này không?');">
+                        <button type="submit" style="padding: 4px 8px; background-color: #f44336; color: white; border: none; border-radius: 4px;">🗑️ Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if not assignments %}
+    <p>Không có dữ liệu phân công nhân sự.</p>
+    {% endif %}
+</body>
+</html>

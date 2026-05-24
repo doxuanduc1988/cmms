@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}Cập nhật hồ sơ: {{ profile.FullName }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-primary">✏️ Cập nhật hồ sơ nhân sự</h2>
+            <p class="text-muted">Nhân viên: <span class="fw-bold text-dark">{{ profile.FullName }}</span> (Mã NV: {{ profile.EmployeeID }})</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('hr.profile_detail', employee_id=profile.EmployeeID) }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="fas fa-times me-2"></i>Hủy
+            </a>
+            <button type="submit" form="editProfileForm" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="fas fa-save me-2"></i>Lưu thay đổi
+            </button>
+        </div>
+    </div>
+
+    <form id="editProfileForm" method="post" enctype="multipart/form-data">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <!-- Main Photo and Header Info in Card -->
+            <div class="card-body bg-white p-4 border-bottom">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="position-relative">
+                        <label for="photo-input" style="cursor:pointer;">
+                            <img id="preview-img" 
+                                 src="{% if profile.Photo %}{{ url_for('static', filename='uploads/hr_pics/' ~ profile.Photo) }}{% else %}{{ url_for('static', filename='no-photo.png') }}{% endif %}" 
+                                 class="rounded-4 shadow-sm object-fit-cover border border-4 border-white" 
+                                 style="width: 100px; height: 130px;">
+                            <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-1 shadow" style="transform: translate(25%, 25%);">
+                                <i class="fas fa-camera fa-xs"></i>
+                            </div>
+                        </label>
+                        <input type="file" name="photo" id="photo-input" accept="image/*" class="d-none">
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">{{ profile.FullName }}</h4>
+                        <div class="d-flex gap-3 text-muted small">
+                            <span><i class="fas fa-id-badge me-1"></i> {{ profile.EmployeeID }}</span>
+                            <span><i class="fas fa-building me-1"></i> {{ profile.department.DepartmentName or profile.DepartmentCode }}</span>
+                            <span><i class="fas fa-user-tag me-1"></i> {{ profile.JobPosition.JobPositionName or 'Chưa cập nhật' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Horizontal Navigation -->
+            <div class="card-header bg-light border-0 p-0">
+                <ul class="nav nav-tabs nav-fill border-0 scroll-x" id="hrTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active py-3 fw-semibold border-0" data-bs-toggle="tab" href="#tab-personal">
+                            <i class="fas fa-user me-2"></i>Cá nhân
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#tab-contact-id">
+                            <i class="fas fa-id-card me-2"></i>Liên hệ & Định danh
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#tab-work-contract">
+                            <i class="fas fa-briefcase me-2"></i>Công tác & HĐ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#tab-salary-view">
+                            <i class="fas fa-money-bill-wave me-2"></i>Lương
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#tab-leave-view">
+                            <i class="fas fa-calendar-alt me-2"></i>Nghỉ phép & OT
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#tab-edu-view">
+                            <i class="fas fa-graduation-cap me-2"></i>Học vấn
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#tab-dep-view">
+                            <i class="fas fa-users me-2"></i>Phụ thuộc
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#tab-award-view">
+                            <i class="fas fa-award me-2"></i>Khen thưởng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-3 fw-semibold border-0" data-bs-toggle="tab" href="#tab-others">
+                            <i class="fas fa-ellipsis-h me-2"></i>Khác
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-4 bg-white">
+                <div class="tab-content" id="hrTabsContent">
+                    
+                    <!-- 1. Cá nhân -->
+                    <div class="tab-pane fade show active" id="tab-personal">
+                        <h5 class="fw-bold mb-4 text-dark border-start border-primary border-4 ps-3">Thông tin cơ bản</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Họ và tên</label>
+                                <input type="text" name="FullName" class="form-control rounded-3" value="{{ profile.FullName }}" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Giới tính</label>
+                                <select name="Gender" class="form-select rounded-3">
+                                    <option value="Nam" {% if profile.Gender == 'Nam' %}selected{% endif %}>Nam</option>
+                                    <option value="Nữ" {% if profile.Gender == 'Nữ' %}selected{% endif %}>Nữ</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Ngày sinh</label>
+                                <input type="date" name="DateOfBirth" class="form-control rounded-3" value="{{ profile.DateOfBirth }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Nơi sinh</label>
+                                <input type="text" name="PlaceOfBirth" class="form-control rounded-3" value="{{ profile.PlaceOfBirth or '' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Quốc tịch</label>
+                                <input type="text" name="Nationality" class="form-control rounded-3" value="{{ profile.Nationality or '' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Dân tộc</label>
+                                <input type="text" name="Ethnicity" class="form-control rounded-3" value="{{ profile.Ethnicity or '' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Mã cán bộ</label>
+                                <input type="text" name="StaffCode" class="form-control rounded-3" value="{{ profile.StaffCode or '' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Tình trạng hôn nhân</label>
+                                <input type="text" name="MaritalStatus" class="form-control rounded-3" value="{{ profile.MaritalStatus or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Chức danh</label>
+                                <select name="JobPositionID" class="form-select rounded-3" required>
+                                    {% for position in job_positions %}
+                                        <option value="{{ position.JobPositionID }}" {% if profile.JobPositionID == position.JobPositionID %}selected{% endif %}>
+                                            {{ position.JobPositionName }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Phòng ban</label>
+                                <select name="DepartmentCode" class="form-select rounded-3" required>
+                                    {% for dept in departments %}
+                                        <option value="{{ dept.DepartmentCode }}" {% if profile.DepartmentCode == dept.DepartmentCode %}selected{% endif %}>
+                                            {{ dept.DepartmentName }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Liên hệ & Định danh -->
+                    <div class="tab-pane fade" id="tab-contact-id">
+                        <div class="row g-4">
+                            <div class="col-md-12">
+                                <h5 class="fw-bold mb-3 text-dark border-start border-primary border-4 ps-3">Liên hệ</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Email</label>
+                                        <input type="email" name="Email" class="form-control rounded-3" value="{{ profile.Email or '' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Điện thoại</label>
+                                        <input type="text" name="Phone" class="form-control rounded-3" value="{{ profile.Phone or '' }}">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold">Địa chỉ thường trú</label>
+                                        <input type="text" name="ResidenceAddress" class="form-control rounded-3" value="{{ profile.ResidenceAddress or '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <h5 class="fw-bold mb-3 text-dark border-start border-primary border-4 ps-3 mt-3">Định danh (CCCD)</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Số CCCD/CMND</label>
+                                        <input type="text" name="IDNumber" class="form-control rounded-3" value="{{ profile.IDNumber or '' }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Ngày cấp</label>
+                                        <input type="date" name="IDIssuedDate" class="form-control rounded-3" value="{{ profile.IDIssuedDate }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Nơi cấp</label>
+                                        <input type="text" name="IDIssuedPlace" class="form-control rounded-3" value="{{ profile.IDIssuedPlace or '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Công tác & Hợp đồng -->
+                    <div class="tab-pane fade" id="tab-work-contract">
+                        <h5 class="fw-bold mb-3 text-dark border-start border-primary border-4 ps-3">Thông tin Hợp đồng</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Số hợp đồng</label>
+                                <input type="text" name="ContractNumber" class="form-control rounded-3" value="{{ profile.ContractNumber or '' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Loại hợp đồng</label>
+                                <input type="text" name="ContractType" class="form-control rounded-3" value="{{ profile.ContractType or '' }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Ngày bắt đầu</label>
+                                <input type="date" name="StartDate" class="form-control rounded-3" value="{{ profile.StartDate }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Ngày kết thúc</label>
+                                <input type="date" name="EndDate" class="form-control rounded-3" value="{{ profile.EndDate }}">
+                            </div>
+                        </div>
+                        <h5 class="fw-bold mb-3 text-dark border-start border-primary border-4 ps-3">Quá trình công tác</h5>
+                        <iframe src="{{ url_for('work_history.work_history_list', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="500px" class="border rounded-3"></iframe>
+                    </div>
+
+                    <!-- 4. Lương -->
+                    <div class="tab-pane fade" id="tab-salary-view">
+                        <h5 class="fw-bold mb-3 text-dark border-start border-primary border-4 ps-3">Thông tin Lương</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Mức lương cơ bản</label>
+                                <input type="number" step="0.01" name="Salary" class="form-control rounded-3" value="{{ profile.Salary or 0 }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Phụ cấp khu vực</label>
+                                <input type="number" step="0.01" name="RegionAllowance" class="form-control rounded-3" value="{{ profile.RegionAllowance or 0 }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Số tài khoản</label>
+                                <input type="text" name="BankAccount" class="form-control rounded-3" value="{{ profile.BankAccount or '' }}">
+                            </div>
+                        </div>
+                        <h5 class="fw-bold mb-3 text-dark border-start border-primary border-4 ps-3">Diễn biến lương</h5>
+                        <iframe src="{{ url_for('salary_history.salary_history_list', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="500px" class="border rounded-3"></iframe>
+                    </div>
+
+                    <!-- 5. Nghỉ phép -->
+                    <div class="tab-pane fade" id="tab-leave-view">
+                        <iframe src="{{ url_for('leave.list_leave', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="600px" class="border-0"></iframe>
+                    </div>
+
+                    <!-- 6. Học vấn -->
+                    <div class="tab-pane fade" id="tab-edu-view">
+                        <iframe src="{{ url_for('education.education_list', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="600px" class="border-0"></iframe>
+                    </div>
+
+                    <!-- 7. Phụ thuộc -->
+                    <div class="tab-pane fade" id="tab-dep-view">
+                        <iframe src="{{ url_for('hr_dependent.list_dependents', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="600px" class="border-0"></iframe>
+                    </div>
+
+                    <!-- 8. Khen thưởng -->
+                    <div class="tab-pane fade" id="tab-award-view">
+                        <iframe src="{{ url_for('award_discipline.list_awards', employee_id=profile.EmployeeID) }}?embed=true" width="100%" height="600px" class="border-0"></iframe>
+                    </div>
+
+                    <!-- 9. Khác -->
+                    <div class="tab-pane fade" id="tab-others">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h5 class="fw-bold mb-3 text-dark border-start border-primary border-4 ps-3">Bảo hiểm & Thuế</h5>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Mã số BHXH</label>
+                                        <input type="text" name="InsuranceNumber" class="form-control rounded-3" value="{{ profile.InsuranceNumber or '' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Mã số thuế</label>
+                                        <input type="text" name="TaxCode" class="form-control rounded-3" value="{{ profile.TaxCode or '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="fw-bold mb-3 text-dark border-start border-primary border-4 ps-3">Thôi việc & Khác</h5>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Ngày thôi việc</label>
+                                        <input type="date" name="TerminationDate" class="form-control rounded-3" value="{{ profile.TerminationDate }}">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label small fw-bold">Ghi chú</label>
+                                        <textarea name="Notes" class="form-control rounded-3" rows="3">{{ profile.Notes or '' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    .nav-tabs .nav-link:hover {
+        background: #f8f9fa;
+        color: #0d6efd;
+    }
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        background: white;
+        border-bottom: 3px solid #0d6efd;
+    }
+    .scroll-x {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+    .scroll-x::-webkit-scrollbar {
+        height: 4px;
+    }
+    .scroll-x::-webkit-scrollbar-thumb {
+        background: #dee2e6;
+        border-radius: 4px;
+    }
+    iframe {
+        background: #fdfdfd;
+    }
+</style>
+
+<script>
+document.getElementById("photo-input").addEventListener("change", function(event) {
+    const [file] = event.target.files;
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById("preview-img").src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "estimation/dashboard.html" %}
+{% block est_content %}
+<h2 class="page-title">{{ "Sửa đầu mục công việc" if category else "Thêm đầu mục công việc mới" }}</h2>
+
+<div class="form-card" style="max-width: 600px;">
+    <form method="POST">
+        <div class="form-group">
+            <label>Mã công việc</label>
+            <input type="text" name="CategoryCode" class="form-control" required value="{{ category.CategoryCode if category else '' }}" placeholder="VD: BD-LH01">
+        </div>
+        <div class="form-group">
+            <label>Tên công việc</label>
+            <input type="text" name="CategoryName" class="form-control" required value="{{ category.CategoryName if category else '' }}" placeholder="VD: Bảo dưỡng lò hơi cấp C">
+        </div>
+        <div class="form-group">
+            <label>Đơn vị tính</label>
+            <input type="text" name="Unit" class="form-control" value="{{ category.Unit if category else 'công' }}" placeholder="công">
+        </div>
+        <div class="form-group">
+            <label>Mô tả</label>
+            <textarea name="Description" class="form-control" rows="3">{{ category.Description if category else '' }}</textarea>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+            <a href="{{ url_for('estimation.list_categories') }}" class="btn btn-outline">Huỷ</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

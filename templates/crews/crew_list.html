@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>🧳 Danh sách các Kíp vận hành</h4>
+
+<a href="{{ url_for('crew.create_crew') }}" class="btn btn-primary mb-3">➕ Thêm kíp mới</a>
+
+<table class="table table-bordered table-hover">
+  <thead class="table-light">
+    <tr>
+      <th>#</th>
+      <th>Mã kíp</th>
+      <th>Tên kíp</th>
+      <th>Mô tả</th>
+      <th class="text-center">Thao tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for crew in crews %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ crew.CrewCode }}</td>
+      <td>{{ crew.CrewName }}</td>
+      <td>{{ crew.Description }}</td>
+      <td class="text-center">
+        <a href="{{ url_for('crew.edit_crew', crew_id=crew.CrewID) }}" class="btn btn-sm btn-warning">✏️</a>
+        <form method="post" action="{{ url_for('crew.delete_crew', crew_id=crew.CrewID) }}" style="display:inline;" onsubmit="return confirm('Bạn chắc chắn muốn xoá kíp này?')">
+          <button type="submit" class="btn btn-sm btn-danger">🗑</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

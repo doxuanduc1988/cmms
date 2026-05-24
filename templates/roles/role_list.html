@@ -1,0 +1,39 @@
+from pathlib import Path
+
+role_list_html = """{% extends "layout.html" %}
+{% block title %}Danh sách vai trò{% endblock %}
+
+{% block content %}
+<h2>📋 Danh sách vai trò</h2>
+
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>STT</th>
+      <th>Tên vai trò</th>
+      <th>Mô tả</th>
+      <th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for role in roles %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ role.RoleName }}</td>
+      <td>{{ role.Description or "" }}</td>
+      <td>
+        <a href="{{ url_for('role.assign_permissions', role_id=role.RoleID) }}">⚙️ Phân quyền</a>
+        |
+        <a href="{{ url_for('role.edit_role', id=role.RoleID) }}">✏️ Sửa</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+"""
+
+file_path = Path("/mnt/data/role_list.html")
+file_path.write_text(role_list_html, encoding="utf-8")
+file_path.name

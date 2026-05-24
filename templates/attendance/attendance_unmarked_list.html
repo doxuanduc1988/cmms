@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Nhân viên chưa chấm công{% endblock %}
+{% block breadcrumb %}Chưa chấm công{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-danger-soft"><i class="fas fa-user-xmark"></i></div>
+    <h2>Nhân viên chưa được chấm công</h2>
+  </div>
+  <p class="page-desc">Tra cứu nhân viên chưa có bản ghi chấm công trong ngày</p>
+</div>
+
+<a href="/dashboard/attendance" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<!-- Filter -->
+<div class="filter-card">
+  <form method="post" class="row g-3 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label">Chọn ngày</label>
+      <input type="date" name="date" class="form-control" value="{{ selected_date or '' }}" required>
+    </div>
+    <div class="col-md-5">
+      <label class="form-label">Phòng / Phân xưởng</label>
+      <select name="department_code" class="form-select" required>
+        <option value="">-- Chọn --</option>
+        {% for dept in departments %}
+          <option value="{{ dept.DepartmentCode }}" {% if dept.DepartmentCode == selected_dept %}selected{% endif %}>
+            {{ dept.DepartmentName }} ({{ dept.DepartmentCode }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-primary w-100"><i class="fas fa-download"></i> Tải danh sách</button>
+    </div>
+  </form>
+</div>
+
+{% if employees %}
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-users text-danger"></i> Nhân viên chưa chấm công</h5>
+    <span class="badge-status badge-rejected">{{ employees|length }} người</span>
+  </div>
+  <div class="data-card-body">
+    <div class="table-responsive">
+      <table class="pro-table">
+        <thead>
+          <tr>
+            <th class="text-center">#</th><th>Mã NV</th><th>Họ tên</th><th>Giới tính</th><th>Đơn vị</th><th class="text-center">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in employees %}
+          <tr>
+            <td class="text-center">{{ loop.index }}</td>
+            <td><strong>{{ e.EmployeeID }}</strong></td>
+            <td>{{ e.FullName }}</td>
+            <td>{{ e.Gender }}</td>
+            <td>{{ e.DepartmentCode }}</td>
+            <td class="text-center">
+              <a href="/attendance/create?employee_id={{ e.EmployeeID }}&date={{ selected_date }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i> Chấm bổ sung
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% elif selected_date and selected_dept %}
+<div class="data-card">
+  <div class="data-card-body with-padding">
+    <div class="empty-state">
+      <i class="fas fa-circle-check d-block" style="color:var(--success);opacity:0.6;"></i>
+      <p>Tất cả nhân viên trong phòng này đã được chấm công trong ngày {{ selected_date }}.</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

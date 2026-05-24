@@ -1,0 +1,73 @@
+{% extends "estimation/dashboard.html" %}
+
+{% block breadcrumb %}Dự toán / Phiếu dự toán{% endblock %}
+
+{% block est_content %}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">Danh sách Phiếu dự toán</h5>
+        <a href="{{ url_for('estimation.create_sheet') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Tạo phiếu mới</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Mã phiếu</th>
+                        <th>Tên phiếu</th>
+                        <th>Công trình</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Tổng chi phí</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sheets %}
+                    <tr>
+                        <td class="ps-4"><strong>{{ s.SheetCode }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('estimation.edit_sheet', sheet_id=s.SheetID) }}" class="text-decoration-none fw-semibold text-dark">
+                                {{ s.SheetName }}
+                            </a>
+                        </td>
+                        <td class="text-muted small">{{ s.ProjectName or '—' }}</td>
+                        <td class="small">{{ s.CreatedAt.strftime('%d/%m/%Y') if s.CreatedAt else '—' }}</td>
+                        <td>
+                            {% if s.Status == 'Draft' %}<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2">Nháp</span>
+                            {% elif s.Status == 'Submitted' %}<span class="badge bg-info-subtle text-info border border-info-subtle px-2">Đã gửi</span>
+                            {% elif s.Status == 'Approved' %}<span class="badge bg-success-subtle text-success border border-success-subtle px-2">Duyệt</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold text-primary">{{ "{:,.0f}".format(s.TotalCost or 0) }} ₫</td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group">
+                                {% if has_permission('estimation', 'update') %}
+<a href="{{ url_for('estimation.edit_sheet', sheet_id=s.SheetID) }}" class="btn btn-secondary btn-sm" title="Chi tiết"><i class="fas fa-edit"></i></a>
+{% else %}
+<button disabled class="btn btn-secondary btn-sm" title="Chi tiết"><i class="fas fa-edit"></i></button>
+{% endif %}
+                                <a href="{{ url_for('estimation.export_sheet_excel', sheet_id=s.SheetID) }}" class="btn btn-info btn-sm text-white" title="Xuất Excel"><i class="fas fa-file-excel"></i></a>
+                                {% if has_permission('estimation', 'delete') %}
+<form method="POST" action="{{ url_for('estimation.delete_sheet', sheet_id=s.SheetID) }}" class="d-inline" onsubmit="return confirm('Xoá phiếu dự toán này?')">
+                                    <button type="submit" class="btn btn-danger btn-sm border-0"><i class="fas fa-trash"></i></button>
+                                </form>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền xóa" type="submit" class="btn btn-danger btn-sm border-0"><i class="fas fa-trash"></i></button>
+{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-center py-5 text-muted">Chưa có phiếu dự toán nào.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<a href="{{ url_for('estimation.estimation_dashboard') }}" class="btn btn-link text-decoration-none mt-3 p-0 text-muted">
+    <i class="fas fa-arrow-left me-1"></i> Quay về Dashboard Dự toán
+</a>
+{% endblock %}

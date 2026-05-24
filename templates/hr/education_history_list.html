@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Quá trình học tập - {{ employee.FullName }}{% endblock %}
+{% block breadcrumb %}Nhân sự / Hồ sơ / {{ employee.FullName }} / Học tập{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h3 class="fw-bold mb-0">Quá trình học tập: <span class="text-primary">{{ employee.FullName }}</span></h3>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('education.education_create', employee_id=employee.EmployeeID) }}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus"></i> Thêm quá trình
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th class="ps-4">#</th>
+                        <th>Bằng cấp</th>
+                        <th>Chuyên ngành</th>
+                        <th>Đơn vị đào tạo</th>
+                        <th>Thời gian</th>
+                        <th>Hình thức</th>
+                        <th>Ghi chú</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                    <tr>
+                        <td class="ps-4 text-muted small">{{ loop.index }}</td>
+                        <td class="fw-bold text-dark">{{ r.Degree }}</td>
+                        <td class="fw-semibold">{{ r.Major }}</td>
+                        <td>{{ r.Institution }}</td>
+                        <td class="small">{{ r.StartDate }} <i class="fas fa-arrow-right mx-1 text-muted small"></i> {{ r.EndDate }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ r.Form }}</span></td>
+                        <td class="small text-muted">{{ r.Notes }}</td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group">
+                                {% if has_permission('hr', 'update') %}
+<a href="{{ url_for('education.education_edit', employee_id=employee.EmployeeID, edu_id=r.EduID) }}" class="btn btn-secondary btn-sm" title="Sửa">
+                                    <i class="fas fa-edit text-warning"></i>
+                                </a>
+{% else %}
+<button disabled class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền sửa">
+                                    <i class="fas fa-edit text-secondary"></i>
+                                </button>
+{% endif %}
+                                {% if has_permission('hr', 'delete') %}
+<form method="post" action="{{ url_for('education.education_delete', employee_id=employee.EmployeeID, edu_id=r.EduID) }}" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn xoá mục này?');">
+                                    <button type="submit" class="btn btn-secondary btn-sm" title="Xoá">
+                                        <i class="fas fa-trash text-danger"></i>
+                                    </button>
+                                </form>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền xóa" type="submit" class="btn btn-secondary btn-sm" title="Xoá">
+                                        <i class="fas fa-trash text-secondary"></i>
+                                    </button>
+{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">Chưa có thông tin về quá trình học tập</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<a href="{{ url_for('hr.profile_detail', employee_id=employee.EmployeeID) }}" class="btn btn-link text-decoration-none mt-3 p-0 text-muted">
+    <i class="fas fa-arrow-left me-1"></i> Quay về chi tiết nhân sự
+</a>
+{% endblock %}

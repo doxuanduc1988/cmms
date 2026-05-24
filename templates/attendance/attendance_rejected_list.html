@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Bản ghi bị từ chối{% endblock %}
+{% block breadcrumb %}Bản ghi bị từ chối{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-danger-soft"><i class="fas fa-file-circle-xmark"></i></div>
+    <h2>Danh sách bản ghi bị từ chối</h2>
+  </div>
+  <p class="page-desc">Xem lại, chỉnh sửa và gửi lại các bản ghi chấm công đã bị từ chối</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<form method="post" action="/attendance/rejected/resubmit">
+  <div class="data-card">
+    <div class="data-card-header">
+      <h5><i class="fas fa-times-circle text-danger"></i> Bản ghi từ chối</h5>
+      <span class="text-muted small">{{ records|length }} bản ghi</span>
+    </div>
+    <div class="data-card-body">
+      <div class="table-responsive">
+        <table class="pro-table text-center">
+          <thead>
+            <tr>
+              <th>#</th><th>Chọn</th><th>Mã NV</th><th>Ngày</th><th>Giờ vào</th><th>Giờ ra</th><th>Người từ chối</th><th>Thời gian</th><th class="text-start">Lý do</th><th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in records %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td><input type="checkbox" class="form-check-input" name="attendance_ids" value="{{ row.AttendanceID }}"></td>
+              <td><strong>{{ row.EmployeeID }}</strong></td>
+              <td>{{ row.Date }}</td>
+              <td>{{ row.CheckInTime }}</td>
+              <td>{{ row.CheckOutTime }}</td>
+              <td>{{ row.ApprovedBy }}</td>
+              <td class="text-muted">{{ row.ApprovedAt }}</td>
+              <td class="text-start text-muted">{{ row.Note or '' }}</td>
+              <td>
+                <a href="{{ url_for('attendance_rejected.edit_rejected_attendance', attendance_id=row.AttendanceID) }}" class="btn-action" title="Chỉnh sửa">
+                  <i class="fas fa-pen"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-end mt-2">
+    <button type="submit" class="btn btn-primary"><i class="fas fa-rotate-right me-1"></i> Chấm lại các dòng đã chọn</button>
+  </div>
+</form>
+{% endblock %}

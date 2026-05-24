@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Duyệt chấm công{% endblock %}
+{% block breadcrumb %}Duyệt chấm công{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-success-soft"><i class="fas fa-user-check"></i></div>
+    <h2>Duyệt chấm công</h2>
+  </div>
+  <p class="page-desc">Xem xét và phê duyệt bản ghi chấm công #{{ attendance.AttendanceID }}</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<div class="row">
+  <!-- Approve Form -->
+  <div class="col-lg-7">
+    <div class="form-card" style="max-width:100%;">
+      <h5 class="fw-bold mb-4"><i class="fas fa-edit text-primary me-2"></i>Thông tin chấm công</h5>
+      <form method="POST" action="{{ url_for('attendance_approval.approve_attendance', attendance_id=attendance.AttendanceID) }}">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Mã nhân viên</label>
+            <input type="text" class="form-control" value="{{ attendance.EmployeeID }}" readonly style="background:#f8fafc;">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Ngày</label>
+            <input type="text" class="form-control" value="{{ attendance.Date }}" readonly style="background:#f8fafc;">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Giờ vào (Check In)</label>
+            <input type="time" class="form-control" name="CheckInTime" value="{{ attendance.CheckInTime }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Giờ ra (Check Out)</label>
+            <input type="time" class="form-control" name="CheckOutTime" value="{{ attendance.CheckOutTime }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" name="Status">
+              <option value="Working" {% if attendance.Status == 'Working' %}selected{% endif %}>Đi làm</option>
+              <option value="Leave" {% if attendance.Status == 'Leave' %}selected{% endif %}>Nghỉ phép</option>
+              <option value="Absent" {% if attendance.Status == 'Absent' %}selected{% endif %}>Nghỉ không phép</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Ghi chú</label>
+            <textarea class="form-control" name="Note" rows="2">{{ attendance.Note }}</textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Ghi chú duyệt (nếu có)</label>
+            <textarea class="form-control" name="ApprovalNote" rows="2" placeholder="Nhập ghi chú phê duyệt..."></textarea>
+          </div>
+          <input type="hidden" name="ApprovalLevel" value="{{ approval_level }}">
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-check-circle me-1"></i> Duyệt và lưu</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reject Form -->
+  <div class="col-lg-5">
+    <div class="form-card" style="max-width:100%; border-color:#fecaca;">
+      <h5 class="fw-bold mb-4 text-danger"><i class="fas fa-times-circle me-2"></i>Từ chối chấm công</h5>
+      <form method="POST" action="{{ url_for('attendance_approval.reject_attendance', attendance_id=attendance.AttendanceID) }}">
+        <input type="hidden" name="ApprovalLevel" value="{{ approval_level }}">
+        <div class="mb-3">
+          <label class="form-label">Lý do từ chối</label>
+          <textarea class="form-control" name="RejectionNote" placeholder="Nhập lý do từ chối..." required rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn btn-secondary" style="color:var(--danger);"><i class="fas fa-times-circle me-1"></i> Từ chối</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

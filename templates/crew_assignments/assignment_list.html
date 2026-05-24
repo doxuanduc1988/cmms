@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>👥 Danh sách nhân sự đã gán vào Kíp</h4>
+
+<a href="{{ url_for('crew_assignment.create_assignment') }}" class="btn btn-primary mb-3">➕ Gán nhân sự mới</a>
+
+<table class="table table-bordered table-hover">
+  <thead class="table-light">
+    <tr>
+      <th>#</th>
+      <th>Họ tên nhân sự</th>
+      <th>Phân xưởng / Phòng</th>
+      <th>Kíp</th>
+      <th>Ngày bắt đầu</th>
+      <th>Ngày kết thúc</th>
+      <th class="text-center">Thao tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for assignment, fullname, crewname in records %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ fullname }}</td>
+      <td>{{ assignment.DepartmentName or '---' }}</td>
+      <td>{{ crewname }}</td>
+      <td>{{ assignment.StartDate }}</td>
+      <td>{{ assignment.EndDate or '' }}</td>
+      <td class="text-center">
+        <a href="{{ url_for('crew_assignment.edit_assignment', assignment_id=assignment.AssignmentID) }}" class="btn btn-sm btn-warning">✏️</a>
+        <form method="post" action="{{ url_for('crew_assignment.delete_assignment', assignment_id=assignment.AssignmentID) }}" style="display:inline;" onsubmit="return confirm('Bạn chắc chắn muốn xoá gán kíp này?')">
+          <button type="submit" class="btn btn-sm btn-danger">🗑</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

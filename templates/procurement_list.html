@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Danh sách gói thầu{% endblock %}
+
+{% block content %}
+<style>
+    /* Mỗi người 1 dòng nhờ <br>, và mỗi tên KHÔNG bị tách đôi */
+    td.member-cell {
+        white-space: nowrap !important;
+        word-break: normal;
+        max-width: none;
+        line-height: 1.25;
+    }
+
+    table.table {
+        table-layout: auto;
+    }
+</style>
+<div class="mb-3">
+    <h2 class="fw-bold">🛒 Mua sắm & Đấu thầu</h2>
+    <p class="text-muted mb-0">Quản lý danh sách gói thầu, Nhân sự Tổ chuyên gia và Tổ thẩm định.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('procurement.expert_group') }}" class="action-card">
+            <i class="fas fa-users action-icon text-warning"></i>
+            <h6 class="action-title">Lập tổ chuyên gia</h6>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('procurement.appraisal_group') }}" class="action-card">
+            <i class="fas fa-clipboard-check action-icon text-info"></i>
+            <h6 class="action-title">Lập tổ thẩm định</h6>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('procurement.import_excel_tender_packages') }}" class="action-card">
+            <i class="fas fa-file-import action-icon text-success"></i>
+            <h6 class="action-title">Nhập Excel</h6>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('procurement.download_excel') }}" class="action-card">
+            <i class="fas fa-file-export action-icon text-primary"></i>
+            <h6 class="action-title">Tải file Tổng hợp</h6>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('procurement.procurement_logs') }}" class="action-card">
+            <i class="fas fa-history action-icon text-secondary"></i>
+            <h6 class="action-title">Nhật ký thao tác</h6>
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">📦 Danh sách Gói thầu</h5>
+        </div>
+    </div>
+    <div class="card-body border-bottom bg-light py-2 px-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-12">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control border-0"
+                        placeholder="Tìm theo Mã hiệu, Tên gói thầu, Loại, hoặc thành viên tổ..." value="{{ search }}">
+                    <input type="hidden" name="per_page" value="{{ packages.per_page }}">
+                    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="card-body p-0">
+
+
+        <!-- Bảng danh sách -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Mã hiệu gói thầu</th>
+                        <th>Tên gói thầu</th>
+                        <th class="text-center">Loại</th>
+                        <th class="text-end">Giá trị dự kiến (Triệu đồng)</th>
+                        <th class="text-center">Tổ chuyên gia</th>
+                        <th class="text-center pe-4">Tổ thẩm định</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pkg in packages.items %}
+                    <tr>
+                        <td class="ps-4"><span class="fw-bold text-dark">{{ pkg.PackageCode }}</span></td>
+                        <td>
+                            <div class="small fw-semibold" style="max-width: 400px; white-space: normal;">{{
+                                pkg.PackageName }}</div>
+                        </td>
+                        <td class="text-center"><span class="badge bg-light text-dark border">{{ pkg.PackageType or '—'
+                                }}</span></td>
+                        <td class="text-end fw-bold text-primary">
+                            {% if pkg.PlanValue is not none %}
+                            {{ "{:,.0f}".format(pkg.PlanValue).replace(",", ".") }}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="member-cell text-center small">
+                            {{ expert_map.get(pkg.PackageCode, '') | safe }}
+                        </td>
+                        <td class="member-cell text-center pe-4 small">
+                            {{ appraisal_map.get(pkg.PackageCode, '') | safe }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">Không có dữ liệu gói thầu nào được tìm thấy.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Phân trang & Thống kê -->
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-5">
+    <div class="text-muted small">
+        Hiển thị <b>{{ packages.items|length }}</b> trên tổng số <b>{{ packages.total }}</b> gói thầu.
+        (Trang {{ packages.page }}/{{ packages.pages }})
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+        <form method="get" class="d-flex align-items-center gap-2 small">
+            <input type="hidden" name="search" value="{{ search }}">
+            <input type="hidden" name="page" value="1">
+            <label class="text-muted">Số dòng:</label>
+            <select name="per_page" class="form-select form-select-sm" style="width:80px;"
+                onchange="this.form.submit()">
+                {% set pp = packages.per_page %}
+                <option value="20" {% if pp==20 %}selected{% endif %}>20</option>
+                <option value="50" {% if pp==50 %}selected{% endif %}>50</option>
+                <option value="100" {% if pp==100 %}selected{% endif %}>100</option>
+            </select>
+        </form>
+
+        {% if packages.pages > 1 %}
+        <nav aria-label="Pagination">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item {% if not packages.has_prev %}disabled{% endif %}">
+                    <a class="page-link"
+                        href="{{ url_for('procurement.list_packages', page=packages.prev_num, per_page=packages.per_page, search=search) }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+
+                {% for p in packages.iter_pages() %}
+                {% if p %}
+                <li class="page-item {% if p == packages.page %}active{% endif %}">
+                    <a class="page-link"
+                        href="{{ url_for('procurement.list_packages', page=p, per_page=packages.per_page, search=search) }}">{{
+                        p }}</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+
+                <li class="page-item {% if not packages.has_next %}disabled{% endif %}">
+                    <a class="page-link"
+                        href="{{ url_for('procurement.list_packages', page=packages.next_num, per_page=packages.per_page, search=search) }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+
+{% endblock %}

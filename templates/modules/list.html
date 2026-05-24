@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block title %}Danh sách Module{% endblock %}
+
+{% block breadcrumb %}Hệ thống & Quyền{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-3">
+    <div class="bg-dark bg-gradient text-white rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px;">
+        <i class="fas fa-cubes fs-4"></i>
+    </div>
+    <div>
+        <h2 class="fw-bold mb-0">Danh sách Module</h2>
+        <p class="text-muted mb-0 small">Quản lý các phân hệ chức năng trong hệ thống CMMS.</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Danh sách Module</h5>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('module.add_module') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Thêm Module mới
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-home me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small uppercase">
+                    <tr>
+                        <th class="ps-4">Code</th>
+                        <th>Tên phân hệ</th>
+                        <th>Mô tả chi tiết</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in modules %}
+                    <tr>
+                        <td class="ps-4"><span class="badge bg-light text-dark border">{{ m.ModuleCode }}</span></td>
+                        <td><span class="fw-bold text-dark">{{ m.ModuleName }}</span></td>
+                        <td><span class="text-muted small">{{ m.Description or "—" }}</span></td>
+                        <td class="text-end pe-4">
+                            {% if has_permission('system_admin', 'update') %}
+<a href="{{ url_for('module.edit_module', module_id=m.ModuleID) }}" 
+                               class="btn btn-sm btn-outline-primary rounded-2" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </a>
+{% else %}
+<button disabled class="btn btn-sm btn-outline-primary rounded-2" data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+{% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="fas fa-cubes d-block mb-2 fs-2"></i>
+                            Không có module nào được định nghĩa.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mb-5 d-flex gap-2">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Quay về Dashboard
+    </a>
+    <a href="/dashboard/accounts" class="btn btn-outline-secondary">
+        <i class="fas fa-shield-halved me-1"></i> Tài khoản & quyền
+    </a>
+</div>
+{% endblock %}

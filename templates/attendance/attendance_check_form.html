@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Tra cứu chấm công{% endblock %}
+{% block breadcrumb %}Tra cứu chấm công{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-info-soft"><i class="fas fa-search"></i></div>
+    <h2>Tra cứu chấm công</h2>
+  </div>
+  <p class="page-desc">Tìm kiếm bản ghi chấm công theo ngày, ca, kíp và phòng ban</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<div class="form-card">
+  <h5 class="fw-bold mb-4"><i class="fas fa-filter text-info me-2"></i>Bộ lọc tra cứu</h5>
+  <form method="POST" action="{{ url_for('attendance_check.check_attendance') }}">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Ngày</label>
+        <input type="date" name="selected_date" class="form-control" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Phòng / Phân xưởng</label>
+        <select name="department_code" class="form-select">
+          <option value="">-- Tất cả --</option>
+          {% for d in departments %}
+            <option value="{{ d.DepartmentCode }}">{{ d.DepartmentName }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Ca làm</label>
+        <select name="shift_id" class="form-select">
+          <option value="">-- Tất cả --</option>
+          {% for s in shifts %}
+            <option value="{{ s.ShiftID }}">{{ s.ShiftName }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Kíp</label>
+        <select name="crew_id" class="form-select">
+          <option value="">-- Tất cả --</option>
+          {% for c in crews %}
+            <option value="{{ c.CrewID }}">{{ c.CrewName }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12">
+        <button class="btn btn-primary"><i class="fas fa-search me-1"></i> Tra cứu</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

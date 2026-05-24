@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sơ yếu lý lịch</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 12pt; }
+        h2 { margin-top: 1em; border-bottom: 1px solid #333; padding-bottom: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
+        th, td { padding: 6px; border: 1px solid #aaa; vertical-align: top; }
+    </style>
+</head>
+<body>
+
+<h1>SƠ YẾU LÝ LỊCH</h1>
+
+{% if photo_path %}
+  <div style="text-align:right; margin-bottom: 10px;">
+    <img src="file://{{ photo_path }}" width="120">
+  </div>
+{% endif %}
+
+{% if 'profile' in selected_sections %}
+  <h2>I. Thông tin cơ bản</h2>
+  <p><strong>Họ tên:</strong> {{ profile.FullName }}</p>
+  <p><strong>Ngày sinh:</strong> {{ profile.DateOfBirth }}</p>
+  <p><strong>CCCD:</strong> {{ profile.IDNumber }}</p>
+  <p><strong>Email:</strong> {{ profile.Email }}</p>
+  <p><strong>Điện thoại:</strong> {{ profile.Phone }}</p>
+  <p><strong>Chức vụ:</strong> {{ profile.JobPosition.JobPositionName }}</p>
+  <p><strong>Đơn vị:</strong> {{ profile.DepartmentCode }}</p>
+  <p><strong>Mã số BHXH:</strong> {{ profile.InsuranceNumber }}</p>
+  <p><strong>Mã số thuế:</strong> {{ profile.TaxCode }}</p>
+{% endif %}
+
+{% if 'education' in selected_sections %}
+  <h2>II. Quá trình học vấn</h2>
+  <table>
+    <tr><th>Thời gian</th><th>Trường</th><th>Bằng cấp</th></tr>
+    {% for edu in education_list %}
+    <tr>
+      <td>{{ edu.StartDate }} - {{ edu.EndDate }}</td>
+      <td>{{ edu.SchoolName }}</td>
+      <td>{{ edu.Degree }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+{% if 'work' in selected_sections %}
+  <h2>III. Quá trình công tác</h2>
+  <table>
+    <tr><th>Thời gian</th><th>Đơn vị</th><th>Chức vụ</th></tr>
+    {% for job in work_history_list %}
+    <tr>
+      <td>{{ job.StartDate }} - {{ job.EndDate }}</td>
+      <td>{{ job.WorkPlace }}</td>
+      <td>{{ job.JobTitle }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+{% if 'family' in selected_sections %}
+  <h2>IV. Thông tin người phụ thuộc</h2>
+  <table>
+    <tr><th>Họ tên</th><th>Quan hệ</th><th>Ngày sinh</th></tr>
+    {% for d in dependents %}
+    <tr>
+      <td>{{ d.FullName }}</td>
+      <td>{{ d.Relationship }}</td>
+      <td>{{ d.DateOfBirth }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+{% if 'salary' in selected_sections %}
+  <h2>V. Quá trình lương</h2>
+  <table>
+    <tr><th>Từ ngày</th><th>Mã bậc lương</th><th>Mô tả</th><th>Lý do</th></tr>
+    {% for s in salary_history %}
+    <tr>
+      <td>{{ s.EffectiveDate }}</td>
+      <td>{{ s.SalaryCode }}</td>
+      <td>{{ s.Description }}</td>
+      <td>{{ s.Reason }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Thêm mới' if action == 'create' else 'Cập nhật' }} Quá trình công tác{% endblock %}
+{% block breadcrumb %}Nhân sự / Hồ sơ / {{ employee.FullName }} / Công tác / {{ 'Thêm mới' if action == 'create' else 'Cập nhật' }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h3 class="fw-bold mb-0">
+            <i class="fas {{ 'fa-plus-circle text-primary' if action == 'create' else 'fa-edit text-warning' }} me-2"></i>
+            {{ 'Thêm mới' if action == 'create' else 'Cập nhật' }} quá trình công tác
+        </h3>
+        <p class="text-muted">Nhân viên: <strong>{{ employee.FullName }}</strong> ({{ employee.EmployeeID }})</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="post">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Ngày bắt đầu</label>
+                    <input type="date" name="StartDate" class="form-control shadow-sm" value="{{ record.StartDate if record else '' }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Ngày kết thúc</label>
+                    <input type="date" name="ToDate" class="form-control shadow-sm" value="{{ record.ToDate if record else '' }}">
+                    <small class="text-muted">Để trống nếu đang công tác tại đơn vị này.</small>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Đơn vị công tác</label>
+                    <input type="text" name="DepartmentName" class="form-control shadow-sm" value="{{ record.DepartmentName if record else '' }}" placeholder="VD: Phân xưởng vận hành, Phòng Kế hoạch..." required>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Chức vụ / Công việc đảm nhận</label>
+                    <input type="text" name="Position" class="form-control shadow-sm" value="{{ record.Position if record else '' }}" placeholder="VD: Trưởng phòng, Nhân viên kỹ thuật..." required>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Ghi chú bổ sung</label>
+                    <textarea name="Notes" class="form-control shadow-sm" rows="3" placeholder="Thông tin chi tiết về quá trình công tác...">{{ record.Notes if record else '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fas fa-save me-1"></i> Lưu thông tin
+                </button>
+                <a href="{{ url_for('work_history.work_history_list', employee_id=employee.EmployeeID) }}" class="btn btn-light px-4 border shadow-sm">
+                    <i class="fas fa-times me-1"></i> Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

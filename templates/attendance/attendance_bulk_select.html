@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Chấm công hàng loạt{% endblock %}
+{% block breadcrumb %}Chấm công hàng loạt{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-primary-soft"><i class="fas fa-users-rectangle"></i></div>
+    <h2>Chấm công hàng loạt</h2>
+  </div>
+  <p class="page-desc">Chọn phòng ban, ca, kíp để chấm công cho nhóm nhân viên</p>
+</div>
+
+<a href="/dashboard/attendance" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+{% if session.role in ['admin', 'nhansu'] %}
+<div class="form-card">
+  <h5 class="fw-bold mb-4"><i class="fas fa-filter text-primary me-2"></i>Chọn điều kiện</h5>
+  <form method="POST" action="{{ url_for('attendance_bulk.bulk_create_attendance') }}">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Ngày chấm công</label>
+        <input type="date" name="selected_date" class="form-control" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Phòng / Phân xưởng</label>
+        <select name="department_code" class="form-select" required>
+          <option value="">-- Chọn phòng --</option>
+          {% for dept in departments %}
+            <option value="{{ dept.DepartmentCode }}">{{ dept.DepartmentName }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Ca làm việc</label>
+        <select name="shift_id" class="form-select" required>
+          {% for shift in shifts %}
+            <option value="{{ shift.ShiftID }}">{{ shift.ShiftName }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Kíp (nếu có)</label>
+        <select name="crew_id" id="crew_id" class="form-select select2">
+          <option value="">-- Tất cả Kíp --</option>
+          {% for crew in crews %}
+            <option value="{{ crew.CrewID }}">{{ crew.CrewName }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-download me-1"></i> Tải danh sách</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% else %}
+<div class="data-card">
+  <div class="data-card-body with-padding">
+    <div class="empty-state">
+      <i class="fas fa-lock d-block text-danger"></i>
+      <p class="text-danger">Bạn không có quyền chấm công.</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.select2').select2({ placeholder: "Chọn hoặc tìm kiếm tên kíp...", allowClear: true });
+});
+</script>
+{% endblock %}

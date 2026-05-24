@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Tra cứu sức khỏe nhân sự{% endblock %}
+{% block breadcrumb %}Nhân sự / Tra cứu sức khỏe{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h3 class="fw-bold mb-0">Tra cứu thông tin sức khỏe</h3>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-2">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="query" class="form-control border-start-0 ps-0" placeholder="Nhập mã nhân viên hoặc họ tên..." value="{{ request.args.get('query', '') }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-secondary w-100" type="submit">Tìm kiếm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if profiles %}
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Mã NV</th>
+                        <th>Họ và tên</th>
+                        <th>Giới tính</th>
+                        <th>Phòng ban</th>
+                        <th>Chức danh</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in profiles %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">{{ p.EmployeeID }}</td>
+                        <td class="fw-semibold">{{ p.FullName }}</td>
+                        <td>{{ p.Gender }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ p.DepartmentCode }}</span></td>
+                        <td><span class="small">{{ p.JobPosition.JobPositionName if p.JobPosition else '' }}</span></td>
+                        <td class="text-center pe-4">
+                            <a href="{{ url_for('hr_health.list_health', employee_id=p.EmployeeID) }}" class="btn btn-secondary btn-sm shadow-sm" title="Xem sức khỏe">
+                                <i class="fas fa-notes-medical text-info me-1"></i> Xem hồ sơ
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% elif request.args.get('query') %}
+<div class="alert alert-warning border-0 shadow-sm">
+    <i class="fas fa-exclamation-triangle me-2"></i> Không tìm thấy nhân sự phù hợp với từ khóa "{{ request.args.get('query') }}".
+</div>
+{% endif %}
+
+<a href="/dashboard/hr" class="btn btn-link text-decoration-none mt-3 p-0 text-muted">
+    <i class="fas fa-arrow-left me-1"></i> Quay về Dashboard Nhân sự
+</a>
+{% endblock %}

@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Lập tổ chuyên gia{% endblock %}
+{% block breadcrumb %}Mua sắm - Đấu thầu{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{{ url_for('procurement.list_packages') }}" class="back-nav">
+        <i class="fas fa-arrow-left"></i> Quay lại danh sách gói thầu
+    </a>
+    <div class="page-title mt-2">
+        <div class="page-icon bg-primary-soft">
+            <i class="fas fa-users-gear"></i>
+        </div>
+        <div>
+            <h2>Lập tổ chuyên gia</h2>
+            <p class="text-muted small mb-0">Thiết lập danh sách nhân sự tham gia đánh giá, chuyên gia cho gói thầu</p>
+        </div>
+    </div>
+</div>
+
+<form method="post" id="groupForm">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="filter-card">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Gói thầu cần thiết lập tổ chuyên gia</label>
+                        <select name="package_code" id="packageSelect" class="form-select" required>
+                            <option value="">-- Chọn gói thầu --</option>
+                            {% for p in packages %}
+                            <option value="{{ p.PackageCode }}" {% if selected_package==p.PackageCode %}selected{% endif
+                                %}>
+                                {{ p.PackageCode }} - {{ p.PackageName }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle me-1"></i> Chọn gói thầu để xem danh sách nhân sự đã được phân
+                            công.
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tìm kiếm nhân sự</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i
+                                    class="fas fa-search text-muted"></i></span>
+                            <input type="text" class="form-control border-start-0" name="search" id="searchBox"
+                                placeholder="Tìm theo Họ tên hoặc Mã nhân viên..." value="{{ search }}">
+                            <button class="btn btn-outline-secondary border-start-0" type="button"
+                                id="btnFilter">Lọc</button>
+                        </div>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-lightbulb me-1"></i> Lọc nhanh theo tên nhân sự.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="data-card mt-2">
+        <div class="data-card-header">
+            <h5><i class="fas fa-user-tie text-primary"></i> Danh sách thành viên tổ chuyên gia</h5>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small">Quy định: 1 người chỉ tham gia một trong 2 tổ.</span>
+                <button type="submit" class="btn btn-primary btn-sm px-3">
+                    <i class="fas fa-check-circle me-1"></i> Lưu nhanh
+                </button>
+            </div>
+        </div>
+        <div class="data-card-body p-0">
+            <div class="table-responsive">
+                <table class="pro-table" id="empTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px" class="text-center">Chọn</th>
+                            <th>Họ và tên</th>
+                            <th>Chức danh / Vị trí</th>
+                            <th style="width: 250px">Trạng thái hiện tại</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in employees %}
+                        {% set key = (e.EmployeeID or '') %}
+                        {% set key_norm = (key | trim | upper) %}
+                        {% set is_locked = (key_norm in locked_norm) %}
+
+                        <tr class="emp-row" style="display:none" data-name="{{ (e.FullName or '') | lower }}"
+                            data-empid="{{ (key or '') | lower }}">
+                            <td class="text-center">
+                                <div class="form-check d-flex justify-content-center">
+                                    <input type="checkbox" class="form-check-input emp-check" name="members"
+                                        value="{{ key }}" {% if key_norm in preselected_norm %}checked{% endif %} {% if
+                                        is_locked %}disabled{% endif %}>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ e.FullName }}</div>
+                                <div class="text-muted extra-small" style="font-size: 11px;">Mã NV: {{ key }}</div>
+                            </td>
+                            <td>{% if e.JobPosition %}{{ e.JobPosition.JobPositionName }}{% else %}<span
+                                    class="text-muted italic">Chưa cập nhật</span>{% endif %}</td>
+                            <td>
+                                {% if is_locked %}
+                                <span class="badge-status bg-secondary text-white">
+                                    <i class="fas fa-lock me-1"></i> Đã thuộc Tổ thẩm định
+                                </span>
+                                {% else %}
+                                {% if key_norm in preselected_norm %}
+                                <span class="badge-status badge-working">
+                                    <i class="fas fa-check-circle me-1"></i> Đang được chọn
+                                </span>
+                                {% else %}
+                                <span class="badge-status badge-leave">
+                                    <i class="fas fa-plus-circle me-1"></i> Có thể chọn
+                                </span>
+                                {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-user-slash"></i>
+                                <p>Không tìm thấy nhân sự phù hợp</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="p-3 bg-light border-top d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                <i class="fas fa-save me-2"></i> Lưu tổ chuyên gia
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+    (function () {
+        const table = document.getElementById('empTable');
+        if (!table) return;
+
+        const rows = Array.from(table.querySelectorAll('tbody .emp-row'));
+        const searchBox = document.getElementById('searchBox');
+        const btnFilter = document.getElementById('btnFilter');
+        const packageSelect = document.getElementById('packageSelect');
+
+        function hideAll() { rows.forEach(r => r.style.display = 'none'); }
+
+        function applySearchFilter() {
+            const q = (searchBox?.value || '').trim().toLowerCase();
+            if (!q) return rows;
+            return rows.filter(r => {
+                const name = (r.getAttribute('data-name') || '');
+                const empid = (r.getAttribute('data-empid') || '');
+                return name.includes(q) || empid.includes(q);
+            });
+        }
+
+        function reloadWithPackage() {
+            const pkg = (packageSelect?.value || '').trim();
+            if (!pkg) return false;
+            const q = (searchBox?.value || '').trim();
+
+            const params = new URLSearchParams();
+            params.set('package_code', pkg);
+            if (q) params.set('search', q);
+
+            window.location.href = window.location.pathname + '?' + params.toString();
+            return true;
+        }
+
+        function showAll() {
+            hideAll();
+
+            const tbody = table.tBodies[0];
+
+            // pinned: người đã chọn (checked) + người bị khoá (disabled) để luôn nổi lên đầu
+            const pinnedChecked = rows.filter(r => r.querySelector('.emp-check')?.checked);
+            const pinnedDisabled = rows.filter(r => {
+                const cb = r.querySelector('.emp-check');
+                return cb && cb.disabled && !cb.checked;
+            });
+            const pinned = [...pinnedChecked, ...pinnedDisabled];
+            const pinnedSet = new Set(pinned);
+
+            // đưa pinned lên đầu bảng
+            const frag = document.createDocumentFragment();
+            pinned.forEach(r => frag.appendChild(r));
+            rows.forEach(r => { if (!pinnedSet.has(r)) frag.appendChild(r); });
+            tbody.appendChild(frag);
+
+            // hiển thị pinned luôn
+            pinned.forEach(r => r.style.display = '');
+
+            // phần còn lại hiển thị theo filter
+            const filtered = applySearchFilter();
+            const filteredSet = new Set(filtered);
+
+            rows.forEach(r => {
+                if (pinnedSet.has(r)) return;
+                r.style.display = filteredSet.has(r) ? '' : 'none';
+            });
+        }
+
+        if (packageSelect) packageSelect.addEventListener('change', reloadWithPackage);
+
+        table.addEventListener('change', (ev) => {
+            const t = ev.target;
+            if (t && t.classList.contains('emp-check')) showAll();
+        });
+
+        if (btnFilter) btnFilter.addEventListener('click', function () {
+            if (reloadWithPackage()) return;
+            showAll();
+        });
+
+        if (searchBox) searchBox.addEventListener('input', showAll);
+
+        showAll();
+    })();
+</script>
+{% endblock %}

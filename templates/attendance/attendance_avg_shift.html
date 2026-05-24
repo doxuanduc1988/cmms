@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Biểu đồ theo ca làm việc{% endblock %}
+{% block breadcrumb %}Biểu đồ theo ca{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-success-soft"><i class="fas fa-chart-bar"></i></div>
+    <h2>Công trung bình theo ca — Tháng {{ month }}/{{ year }}</h2>
+  </div>
+  <p class="page-desc">Phân tích số công trung bình phân theo từng ca làm việc</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<!-- Filter -->
+<div class="filter-card">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-auto">
+      <label class="form-label">Tháng</label>
+      <select name="month" class="form-select">
+        {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == month %}selected{% endif %}>Tháng {{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">Năm</label>
+      <input type="number" name="year" class="form-control" value="{{ year }}">
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Xem</button>
+    </div>
+  </form>
+</div>
+
+<!-- View Switch -->
+<div class="d-flex justify-content-center mb-4">
+  <div class="view-switch">
+    <a href="{{ url_for('attendance_avg_shift.attendance_avg_by_shift', month=month, year=year) }}" class="active">Theo Ca</a>
+    <a href="{{ url_for('attendance_avg_shift.attendance_line_by_day', month=month, year=year) }}">Theo Ngày</a>
+    <a href="{{ url_for('attendance_avg_shift.attendance_heatmap', month=month, year=year) }}">Heatmap</a>
+  </div>
+</div>
+
+<!-- Chart -->
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-chart-bar text-success"></i> Biểu đồ công theo ca</h5>
+  </div>
+  <div class="chart-container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <canvas id="shiftChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  new Chart(document.getElementById('shiftChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: {{ labels | tojson }},
+      datasets: [{
+        label: 'Công trung bình',
+        data: {{ values | tojson }},
+        backgroundColor: 'rgba(37, 99, 235, 0.15)',
+        borderColor: '#2563eb',
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }, title: { display: true, text: 'Công trung bình theo Ca', font: { size: 14, weight: '600' } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Số công' } },
+        x: { grid: { display: false }, title: { display: true, text: 'Ca làm việc' } }
+      }
+    }
+  });
+</script>
+{% endblock %}

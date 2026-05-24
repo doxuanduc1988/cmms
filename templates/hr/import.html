@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Import Hồ sơ nhân sự{% endblock %}
+{% block breadcrumb %}Nhân sự / Import Excel{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h3 class="fw-bold mb-0"><i class="fas fa-file-import text-primary me-2"></i>Nhập hồ sơ từ Excel</h3>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('hr.list_profiles') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data" action="{{ url_for('hr.import_excel_hr_profiles') }}">
+                    <div class="upload-zone border-dashed rounded-4 p-5 text-center mb-4 bg-light" style="border: 2px dashed #dee2e6;">
+                        <div class="mb-3">
+                            <i class="fas fa-file-excel fa-4x text-success opacity-75"></i>
+                        </div>
+                        <h5 class="fw-bold">Chọn tệp dữ liệu</h5>
+                        <p class="text-muted small mb-4">Hệ thống hỗ trợ tệp định dạng .xlsx (Excel)</p>
+                        
+                        <div class="d-flex justify-content-center">
+                            <input type="file" name="file" id="fileInput" class="form-control" style="max-width: 350px;" required>
+                        </div>
+                    </div>
+
+                    <div class="alert bg-primary-soft border-0 rounded-3 p-4 mb-4">
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-circle-info me-2"></i>Hướng dẫn chuẩn bị dữ liệu:
+                        </h6>
+                        <p class="small text-dark mb-2">Để dữ liệu được nhập chính xác, tệp Excel của bạn cần có các cột sau:</p>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <ul class="small mb-0 text-muted">
+                                    <li><strong>EmployeeID</strong> (Mã nhân viên - Bắt buộc)</li>
+                                    <li><strong>FullName</strong> (Họ và tên - Bắt buộc)</li>
+                                    <li><strong>Gender</strong> (Giới tính)</li>
+                                    <li><strong>DepartmentCode</strong> (Mã đơn vị)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="small mb-0 text-muted">
+                                    <li><strong>JobPositionID</strong> (Mã chức danh)</li>
+                                    <li><strong>Email</strong> (Địa chỉ Email)</li>
+                                    <li><strong>Phone</strong> (Số điện thoại)</li>
+                                    <li><strong>StaffCode</strong> (Mã thẻ nội bộ)</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p class="small text-danger mt-3 mb-0">
+                            <i class="fas fa-triangle-exclamation me-1"></i> Lưu ý: Hệ thống sẽ dựa vào <strong>EmployeeID</strong> để cập nhật nếu đã tồn tại hoặc thêm mới nếu chưa có.
+                        </p>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-upload me-2"></i> Bắt đầu Tải lên & Nhập dữ liệu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <p class="text-muted small">
+                © 2026 Nhà máy Nhiệt điện Thái Bình 2 - Hệ thống Quản trị CMMS
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-dashed {
+        border-style: dashed !important;
+    }
+    .bg-primary-soft {
+        background-color: #eff6ff !important;
+    }
+</style>
+{% endblock %}

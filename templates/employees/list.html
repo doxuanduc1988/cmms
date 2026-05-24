@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Danh sách tài khoản nhân viên{% endblock %}
+
+{% block breadcrumb %}Nhân sự & Hồ sơ{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-3">
+    <div class="bg-primary bg-gradient text-white rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px;">
+        <i class="fas fa-users-cog fs-4"></i>
+    </div>
+    <div>
+        <h2 class="fw-bold mb-0">Danh sách tài khoản nhân viên</h2>
+        <p class="text-muted mb-0 small">Quản lý thông tin tài khoản, vai trò và trạng thái của cán bộ nhân viên.</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Danh sách tài khoản</h5>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('employee.create_employee') }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-user-plus me-1"></i> Thêm tài khoản mới
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-home me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body border-bottom bg-light py-2 px-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-7">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control border-0" 
+                           placeholder="Tìm theo họ tên, mã nhân viên hoặc tên đăng nhập..." value="{{ search }}">
+                    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+                </div>
+            </div>
+            <div class="col-md-5 text-end">
+                <div class="text-muted small">
+                    Tổng số: <b>{{ employees.total }}</b> nhân viên
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small uppercase">
+                    <tr>
+                        <th class="ps-4">Mã NV</th>
+                        <th>Họ tên</th>
+                        <th>Tài khoản</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Phòng ban</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees.items %}
+                    <tr>
+                        <td class="ps-4"><span class="fw-bold text-dark">{{ emp.EmployeeID }}</span></td>
+                        <td>{{ emp.FullName }}</td>
+                        <td><code class="text-primary">{{ emp.Username }}</code></td>
+                        <td>
+                            {% for role in emp.roles %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle mb-1">
+                                    {{ role.RoleName }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">Chưa phân vai</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if emp.Status == 'Active' or emp.Status == 'Đang làm việc' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Hoạt động</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">{{ emp.Status or 'N/A' }}</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="small">{{ emp.DepartmentCode }}</span></td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex justify-content-end gap-1">
+                                {% if has_permission('system_admin', 'update') %}
+<a href="{{ url_for('employee.edit_employee', employee_id=emp.EmployeeID) }}" 
+                                   class="btn btn-sm btn-outline-primary rounded-2" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+{% else %}
+<button disabled class="btn btn-sm btn-outline-primary rounded-2" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+{% endif %}
+                                <form action="{{ url_for('employee.reset_password', employee_id=emp.EmployeeID) }}" 
+                                      method="POST" class="d-inline" 
+                                      onsubmit="return confirm('Đặt lại mật khẩu mặc định cho tài khoản này?');">
+                                    <input type="hidden" name="NewPassword" value="123456">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary rounded-2" title="Reset mật khẩu">
+                                        <i class="fas fa-key"></i>
+                                    </button>
+                                </form>
+                                {% if has_permission('system_admin', 'delete') %}
+<form action="{{ url_for('employee.delete_employee', employee_id=emp.EmployeeID) }}" 
+                                      method="POST" class="d-inline" 
+                                      onsubmit="return confirm('Bạn có chắc muốn xoá tài khoản này?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-2" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền xóa" type="submit" class="btn btn-sm btn-outline-danger rounded-2" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fas fa-user-slash d-block mb-2 fs-2"></i>
+                            Không có tài khoản nào được tìm thấy.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if employees.pages > 1 %}
+<nav aria-label="Phân trang" class="mb-5">
+    <ul class="pagination pagination-sm justify-content-center mb-0">
+        <li class="page-item {% if not employees.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ employees.prev_num }}&search={{ search }}">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+
+        {% for page_num in employees.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                <li class="page-item {% if page_num == employees.page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page_num }}&search={{ search }}">{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+
+        <li class="page-item {% if not employees.has_next %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ employees.next_num }}&search={{ search }}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
+<div class="mb-5">
+    <a href="/dashboard/accounts" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Quay về Tài khoản & quyền
+    </a>
+</div>
+{% endblock %}

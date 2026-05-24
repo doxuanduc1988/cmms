@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Thêm mới" if action == "create" else "Cập nhật" }} Quá trình lương{% endblock %}
+{% block breadcrumb %}Nhân sự / Hồ sơ / {{ employee.FullName }} / Lương / {{ 'Thêm mới' if action == 'create' else 'Cập nhật' }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h3 class="fw-bold mb-0">
+            <i class="fas {{ 'fa-plus-circle text-primary' if action == 'create' else 'fa-edit text-warning' }} me-2"></i>
+            {{ "Thêm mới" if action == "create" else "Cập nhật" }} quá trình lương
+        </h3>
+        <p class="text-muted">Nhân viên: <strong>{{ employee.FullName }}</strong> ({{ employee.EmployeeID }})</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="post">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Ngày áp dụng</label>
+                    <input type="date" name="EffectiveDate" class="form-control shadow-sm" required
+                           value="{{ record.EffectiveDate.strftime('%Y-%m-%d') if record else '' }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Chọn bậc lương</label>
+                    <select id="SalaryCode" name="SalaryCode" class="form-select shadow-sm" required>
+                        <option value="">-- Chọn bậc lương --</option>
+                        {% for s in salary_table %}
+                        <option
+                            value="{{ s.SalaryCode | trim }}"
+                            data-description="{{ (s.Description or '') | e }}"
+                            data-coefficient="{{ (s.Coefficient if s.Coefficient is not none else '') }}"
+                            {% if record and record.SalaryCode == s.SalaryCode %}selected{% endif %}
+                        >
+                            {{ s.SalaryCode | trim }} - {{ s.Description }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold text-muted">Chức danh tương ứng</label>
+                    <input type="text" id="description" class="form-control shadow-sm bg-light"
+                           value="{{ record.Description if record else '' }}" readonly placeholder="Tự động điền...">
+                    <input type="hidden" name="Description" id="description_hidden" value="{{ record.Description if record else '' }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold text-muted">Hệ số lương tương ứng</label>
+                    <input type="text" id="coefficient" class="form-control shadow-sm bg-light"
+                           value="{{ record.Coefficient if record else '' }}" readonly placeholder="Tự động điền...">
+                    <input type="hidden" name="Coefficient" id="coefficient_hidden" value="{{ record.Coefficient if record else '' }}">
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Lý do điều chỉnh</label>
+                    <input type="text" name="Reason" class="form-control shadow-sm"
+                           value="{{ record.Reason if record else '' }}" placeholder="VD: Nâng bậc định kỳ, Bổ nhiệm chức danh mới...">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Ghi chú thêm</label>
+                    <textarea name="Notes" class="form-control shadow-sm" rows="3" placeholder="Thông tin bổ sung nếu có...">{{ record.Notes if record else '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fas fa-save me-1"></i> Lưu thông tin
+                </button>
+                <a href="{{ url_for('salary_history.salary_history_list', employee_id=employee.EmployeeID) }}" class="btn btn-light px-4 border shadow-sm">
+                    <i class="fas fa-times me-1"></i> Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    const $code = document.getElementById("SalaryCode");
+    const $desc = document.getElementById("description");
+    const $desc_h = document.getElementById("description_hidden");
+    const $coef = document.getElementById("coefficient");
+    const $coef_h = document.getElementById("coefficient_hidden");
+
+    function fillFromSelected() {
+        if (!$code) return;
+        const opt = $code.options[$code.selectedIndex];
+        if (!opt || !opt.value) { 
+            if ($desc) $desc.value = "";
+            if ($desc_h) $desc_h.value = "";
+            if ($coef) $coef.value = "";
+            if ($coef_h) $coef_h.value = "";
+            return;
+        }
+        if ($desc) $desc.value = opt.dataset.description || "";
+        if ($desc_h) $desc_h.value = opt.dataset.description || "";
+        if ($coef) $coef.value = opt.dataset.coefficient || "";
+        if ($coef_h) $coef_h.value = opt.dataset.coefficient || "";
+    }
+
+    document.addEventListener("DOMContentLoaded", fillFromSelected);
+    if ($code) $code.addEventListener("change", fillFromSelected);
+    fillFromSelected();
+})();
+</script>
+{% endblock %}

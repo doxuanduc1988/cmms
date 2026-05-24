@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Danh sách tài khoản{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3>👥 Danh sách tài khoản người dùng</h3>
+
+
+
+  <a href="{{ url_for('account.create_account') }}" class="btn btn-primary mb-3">➕ Tạo tài khoản</a>
+
+  <table class="table table-bordered table-striped">
+    <thead class="table-light">
+      <tr>
+        <th>Họ tên</th>
+        <th>Tài khoản</th>
+        <th>Email</th>
+        <th>Điện thoại</th>
+        <th>Vai trò</th>
+        <th>Trạng thái</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for emp in employees %}
+      <tr>
+        <td>{{ emp.FullName }}</td>
+        <td>{{ emp.Username }}</td>
+        <td>{{ emp.Email }}</td>
+        <td>{{ emp.Phone }}</td>
+
+        {# Vai trò #}
+        <td>
+          {% for r in emp.roles %}
+            <span class="badge bg-info text-dark me-1">{{ r.RoleName }}</span>
+          {% endfor %}
+        </td>
+
+        {# ✅ Trạng thái: hiển thị dạng badge + fallback nếu rỗng #}
+        <td>
+          {% set st = (emp.Status or '').lower() %}
+          {% if st == 'active' %}
+            <span class="badge bg-success">active</span>
+          {% elif st == 'inactive' %}
+            <span class="badge bg-secondary">inactive</span>
+          {% elif st %}
+            <span class="badge bg-info text-dark">{{ emp.Status }}</span>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        <td class="d-flex gap-1">
+          <a href="{{ url_for('account.change_password', EmployeeID=emp.EmployeeID) }}"
+             class="btn btn-sm btn-warning">🔑 Đổi mật khẩu</a>
+
+          <form method="post"
+                action="{{ url_for('account.reset_password', EmployeeID=emp.EmployeeID) }}"
+                style="display:inline;"
+                onsubmit="return confirm('Reset mật khẩu nhân viên này?')">
+            <button class="btn btn-sm btn-danger">♻️ Reset</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

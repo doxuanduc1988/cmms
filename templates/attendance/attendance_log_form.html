@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Lịch sử chỉnh sửa công{% endblock %}
+{% block breadcrumb %}Lịch sử chỉnh sửa{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-secondary" style="background:#f1f5f9;color:#64748b;"><i class="fas fa-history"></i></div>
+    <h2>Lịch sử chỉnh sửa công</h2>
+  </div>
+  <p class="page-desc">Tra cứu lịch sử thay đổi bản ghi chấm công</p>
+</div>
+
+<a href="/dashboard/accounts" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Tài khoản & Quyền
+</a>
+
+<!-- Filter -->
+<div class="filter-card">
+  <form method="post" class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Mã nhân viên</label>
+      <input type="text" name="employee_id" class="form-control" value="{{ employee_id or '' }}" placeholder="VD: NV001">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Từ ngày</label>
+      <input type="date" name="start_date" class="form-control" value="{{ start_date or '' }}">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Đến ngày</label>
+      <input type="date" name="end_date" class="form-control" value="{{ end_date or '' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Loại chỉnh sửa</label>
+      <select name="change_type" class="form-select">
+        <option value="">-- Tất cả --</option>
+        <option value="Updated" {% if change_type == 'Updated' %}selected{% endif %}>Updated</option>
+        <option value="SplitToOT" {% if change_type == 'SplitToOT' %}selected{% endif %}>SplitToOT</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Tra cứu</button>
+    </div>
+  </form>
+</div>
+
+{% if logs %}
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-list text-secondary"></i> Kết quả</h5>
+    <span class="text-muted small">{{ logs|length }} bản ghi</span>
+  </div>
+  <div class="data-card-body">
+    <div class="table-responsive">
+      <table class="pro-table text-center">
+        <thead>
+          <tr>
+            <th>LogID</th><th>Mã NV</th><th>Giờ cũ</th><th>Giờ mới</th><th>TT cũ</th><th>TT mới</th><th>Người sửa</th><th>Thời gian</th><th>Loại</th><th class="text-start">Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td>{{ log.LogID }}</td>
+            <td><strong>{{ log.EmployeeID }}</strong></td>
+            <td class="text-muted">{{ log.OldCheckIn }} - {{ log.OldCheckOut }}</td>
+            <td>{{ log.NewCheckIn }} - {{ log.NewCheckOut }}</td>
+            <td class="text-muted">{{ log.OldStatus }}</td>
+            <td>{{ log.NewStatus }}</td>
+            <td>{{ log.EditedBy }}</td>
+            <td class="text-muted">{{ log.EditedAt.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td><span class="badge-status badge-pending">{{ log.ChangeType }}</span></td>
+            <td class="text-start text-muted">{{ log.Notes }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="data-card">
+  <div class="data-card-body with-padding">
+    <div class="empty-state">
+      <i class="fas fa-history d-block"></i>
+      <p>Không có dữ liệu. Vui lòng nhập điều kiện và tra cứu.</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

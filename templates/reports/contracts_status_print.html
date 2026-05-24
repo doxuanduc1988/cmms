@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>📄 In Báo cáo tình trạng hợp đồng</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; font-size: 14px; }
+        h2 { text-align: center; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .footer { margin-top: 40px; text-align: right; font-style: italic; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+
+<button class="no-print" onclick="window.print()">🖨️ In báo cáo</button>
+
+<h2>BÁO CÁO TÌNH TRẠNG HỢP ĐỒNG</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Trạng thái hợp đồng</th>
+            <th>Số lượng hợp đồng</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in stats %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ row.Status or 'Không xác định' }}</td>
+            <td>{{ row.Total }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="footer">
+    Ngày in: {{ (now() | datetimeformat('%d/%m/%Y')) if now else '' }}
+</div>
+
+</body>
+</html>

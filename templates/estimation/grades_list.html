@@ -1,0 +1,61 @@
+{% extends "estimation/dashboard.html" %}
+
+{% block breadcrumb %}Dự toán / Bậc tay nghề{% endblock %}
+
+{% block est_content %}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">Bậc tay nghề công nhân</h5>
+        <a href="{{ url_for('estimation.create_grade') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Thêm bậc</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Mã bậc</th>
+                        <th>Tên bậc</th>
+                        <th>Hệ số lương</th>
+                        <th class="text-end">Lương ngày (VNĐ)</th>
+                        <th>Mô tả</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for g in grades %}
+                    <tr>
+                        <td class="ps-4"><strong>{{ g.GradeCode }}</strong></td>
+                        <td>{{ g.GradeName }}</td>
+                        <td>{{ "%.2f"|format(g.Coefficient) }}</td>
+                        <td class="text-end fw-bold text-primary">{{ "{:,.0f}".format(g.DailyWage) }}</td>
+                        <td class="text-muted small">{{ g.Description or '—' }}</td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group">
+                                {% if has_permission('estimation', 'update') %}
+<a href="{{ url_for('estimation.edit_grade', grade_id=g.GradeID) }}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền sửa" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+{% endif %}
+                                {% if has_permission('estimation', 'delete') %}
+<form method="POST" action="{{ url_for('estimation.delete_grade', grade_id=g.GradeID) }}" class="d-inline" onsubmit="return confirm('Xoá bậc tay nghề này?')">
+                                    <button type="submit" class="btn btn-danger btn-sm border-0"><i class="fas fa-trash"></i></button>
+                                </form>
+{% else %}
+<button disabled data-bs-toggle="tooltip" title="Bạn chỉ có quyền xem, không có quyền xóa" type="submit" class="btn btn-danger btn-sm border-0"><i class="fas fa-trash"></i></button>
+{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center py-5 text-muted">Chưa có dữ liệu bậc tay nghề.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<a href="{{ url_for('estimation.estimation_dashboard') }}" class="btn btn-link text-decoration-none mt-3 p-0 text-muted">
+    <i class="fas fa-arrow-left me-1"></i> Quay về Dashboard Dự toán
+</a>
+{% endblock %}

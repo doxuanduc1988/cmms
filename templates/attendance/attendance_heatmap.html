@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Heatmap chấm công{% endblock %}
+{% block breadcrumb %}Heatmap chấm công{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon bg-warning-soft"><i class="fas fa-th"></i></div>
+    <h2>Heatmap chấm công — Tháng {{ month }}/{{ year }}</h2>
+  </div>
+  <p class="page-desc">Bản đồ nhiệt hiển thị số công theo từng nhân viên và ngày</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<div class="filter-card">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-auto">
+      <label class="form-label">Tháng</label>
+      <select name="month" class="form-select">
+        {% for m in range(1, 13) %}
+        <option value="{{ m }}" {% if m == month %}selected{% endif %}>Tháng {{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">Năm</label>
+      <input type="number" name="year" class="form-control" value="{{ year }}">
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Xem</button>
+    </div>
+  </form>
+</div>
+
+<div class="d-flex justify-content-center mb-4">
+  <div class="view-switch">
+    <a href="{{ url_for('attendance_avg_shift.attendance_avg_by_shift', month=month, year=year) }}">Theo Ca</a>
+    <a href="{{ url_for('attendance_avg_shift.attendance_line_by_day', month=month, year=year) }}">Theo Ngày</a>
+    <a href="{{ url_for('attendance_avg_shift.attendance_heatmap', month=month, year=year) }}" class="active">Heatmap</a>
+  </div>
+</div>
+
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-th text-warning"></i> Heatmap chấm công</h5>
+    <div class="d-flex align-items-center gap-3 small text-muted">
+      <span><span class="d-inline-block rounded" style="width:12px;height:12px;background:#fef3c7;"></span> &lt; 4h</span>
+      <span><span class="d-inline-block rounded" style="width:12px;height:12px;background:#bae6fd;"></span> 4-8h</span>
+      <span><span class="d-inline-block rounded" style="width:12px;height:12px;background:#bbf7d0;"></span> &ge; 8h</span>
+    </div>
+  </div>
+  <div class="data-card-body">
+    <div class="table-responsive" style="max-height: 600px; overflow: auto;">
+      <table class="pro-table text-center" style="font-size:12px;">
+        <thead>
+          <tr>
+            <th>STT</th><th>Mã NV</th><th class="text-start">Họ tên</th>
+            {% for d in days %}<th style="min-width:32px;">{{ d }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp_id, full_name in employees.items() %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ emp_id }}</strong></td>
+            <td class="text-start">{{ full_name }}</td>
+            {% for h in heatmap[emp_id] %}
+            <td class="p-1 {% if h == 0 %}heatmap-0{% elif h < 4 %}heatmap-low{% elif h < 8 %}heatmap-mid{% else %}heatmap-high{% endif %}">
+              {{ h if h > 0 else '' }}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

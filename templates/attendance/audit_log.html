@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Lịch sử chỉnh sửa chấm công{% endblock %}
+{% block breadcrumb %}Nhật ký audit{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-icon" style="background:#f1f5f9;color:#64748b;"><i class="fas fa-scroll"></i></div>
+    <h2>Lịch sử chỉnh sửa chấm công</h2>
+  </div>
+  <p class="page-desc">Theo dõi toàn bộ thay đổi trên hệ thống chấm công</p>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="back-nav">
+  <i class="fas fa-arrow-left"></i> Quay về Dashboard Chấm công
+</a>
+
+<!-- Filter -->
+<div class="filter-card">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Mã NV</label>
+      <input name="employee_id" class="form-control" placeholder="Nhập mã NV" value="{{ request.args.employee_id }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Người sửa</label>
+      <input name="edited_by" class="form-control" placeholder="Nhập người sửa" value="{{ request.args.edited_by }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Loại thay đổi</label>
+      <select name="change_type" class="form-select">
+        <option value="">-- Tất cả --</option>
+        <option value="Manual Edit" {% if request.args.change_type == 'Manual Edit' %}selected{% endif %}>Manual Edit</option>
+        <option value="Created" {% if request.args.change_type == 'Created' %}selected{% endif %}>Created</option>
+        <option value="Auto OT Split" {% if request.args.change_type == 'Auto OT Split' %}selected{% endif %}>Auto OT Split</option>
+        <option value="Rejected Revision" {% if request.args.change_type == 'Rejected Revision' %}selected{% endif %}>Rejected Revision</option>
+      </select>
+    </div>
+    <div class="col-md-1">
+      <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i></button>
+    </div>
+    <div class="col-md-2">
+      <a href="{{ url_for('attendance_approval.export_audit_log_excel', employee_id=request.args.employee_id, edited_by=request.args.edited_by, change_type=request.args.change_type, field=request.args.field) }}" class="btn btn-secondary w-100" style="color:var(--success);">
+        <i class="fas fa-file-excel"></i> Excel
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Table -->
+<div class="data-card">
+  <div class="data-card-header">
+    <h5><i class="fas fa-list text-secondary"></i> Nhật ký thay đổi</h5>
+    <span class="text-muted small">{{ logs|length }} bản ghi</span>
+  </div>
+  <div class="data-card-body">
+    <div class="table-responsive">
+      <table class="pro-table text-center">
+        <thead>
+          <tr>
+            <th>Thời gian</th><th>Mã NV</th><th>Người sửa</th><th>Loại</th><th>Trường</th><th>CheckIn</th><th>CheckOut</th><th>Trạng thái</th><th class="text-start">Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in logs %}
+          <tr>
+            <td class="text-muted">{{ row.EditedAt }}</td>
+            <td><strong>{{ row.EmployeeID }}</strong></td>
+            <td>{{ row.EditedBy }}</td>
+            <td><span class="badge-status badge-pending">{{ row.ChangeType }}</span></td>
+            <td>{{ row.FieldChanged }}</td>
+            <td class="text-muted">{{ row.OldCheckIn }} <i class="fas fa-arrow-right mx-1 text-muted" style="font-size:10px;"></i> {{ row.NewCheckIn }}</td>
+            <td class="text-muted">{{ row.OldCheckOut }} <i class="fas fa-arrow-right mx-1 text-muted" style="font-size:10px;"></i> {{ row.NewCheckOut }}</td>
+            <td class="text-muted">{{ row.OldStatus }} <i class="fas fa-arrow-right mx-1 text-muted" style="font-size:10px;"></i> {{ row.NewStatus }}</td>
+            <td class="text-start text-muted">{{ row.OldNote }} <i class="fas fa-arrow-right mx-1 text-muted" style="font-size:10px;"></i> {{ row.NewNote }}</td>
+          </tr>
+          {% endfor %}
+          {% if logs|length == 0 %}
+          <tr><td colspan="9">
+            <div class="empty-state py-4">
+              <i class="fas fa-scroll d-block"></i>
+              <p>Không có dữ liệu nhật ký</p>
+            </div>
+          </td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+  <h4>📋 Quản lý nhân sự theo Kíp - Chỉnh sửa Assigned</h4>
+  <div class="user-info">
+    👤 {{ session.full_name or session.username }} |
+    <a href="{{ url_for('auth.logout') }}">Đăng xuất</a>
+  </div>
+</div>
+
+<a href="{{ url_for('dashboard_attendance') }}" class="btn btn-secondary btn-sm mb-3">← Quay về Dashboard Chấm công</a>
+
+<form method="GET" id="filter-form">
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <label>Chọn Kíp:</label>
+      <select name="crew_id" class="form-select" onchange="this.form.submit()">
+        <option value="">-- Chọn Kíp --</option>
+        {% for crew in crews %}
+        <option value="{{ crew.CrewID }}" {% if selected_crew_id == crew.CrewID|string %}selected{% endif %}>
+          {{ crew.CrewName }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label>Phòng/Đơn vị:</label>
+      <select name="department_code" class="form-select" onchange="this.form.submit()">
+        <option value="">-- Tất cả --</option>
+        {% for dept in departments %}
+        <option value="{{ dept.DepartmentCode }}" {% if selected_department_code == dept.DepartmentCode %}selected{% endif %}>
+          {{ dept.DepartmentName }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+</form>
+
+{% if selected_crew_id %}
+  {% if employees %}
+  <div class="mb-3 text-end">
+    <a href="{{ url_for('crew_assignments.export_crew_assignment_excel', crew_id=selected_crew_id, department_code=selected_department_code) }}" class="btn btn-success btn-sm">📥 Xuất Excel</a>
+    <a href="{{ url_for('crew_assignments.export_crew_assignment_pdf', crew_id=selected_crew_id, department_code=selected_department_code) }}" class="btn btn-danger btn-sm">📄 Xuất PDF</a>
+  </div>
+
+  <form method="POST">
+    <input type="hidden" name="crew_id" value="{{ selected_crew_id }}">
+    <input type="hidden" name="department_code" value="{{ selected_department_code }}">
+    
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle small">
+        <thead class="table-light text-center">
+          <tr>
+            <th>STT</th>
+            <th>Mã NV</th>
+            <th>Họ tên</th>
+            <th>Ngày bắt đầu</th>
+            <th>Ngày kết thúc</th>
+            <th>Vị trí</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp in employees if emp.EmployeeID in assigned_employee_ids %}
+          <tr>
+            <td class="text-center">{{ loop.index }}</td>
+            <td class="text-center">{{ emp.EmployeeID }}</td>
+            <td>{{ emp.FullName }}</td>
+            <input type="hidden" name="employee_ids" value="{{ emp.EmployeeID }}">
+            <td>
+              <input type="date" name="start_dates[{{ emp.EmployeeID }}]" value="{{ assigned_data[emp.EmployeeID]['StartDate'] if assigned_data.get(emp.EmployeeID) else '' }}" class="form-control">
+            </td>
+            <td>
+              <input type="date" name="end_dates[{{ emp.EmployeeID }}]" value="{{ assigned_data[emp.EmployeeID]['EndDate'] if assigned_data.get(emp.EmployeeID) else '' }}" class="form-control">
+            </td>
+            <td>
+              <select name="job_positions[{{ emp.EmployeeID }}]" class="form-select">
+                {% for pos in job_positions %}
+                <option value="{{ pos.JobPositionID }}" {% if assigned_data.get(emp.EmployeeID) and assigned_data[emp.EmployeeID]['JobPositionID'] == pos.JobPositionID %}selected{% endif %}>
+                  {{ pos.JobPositionName }}
+                </option>
+                {% endfor %}
+              </select>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-center mt-4">
+      <button type="submit" class="btn btn-success">💾 Lưu thay đổi</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="alert alert-warning mt-3">⚠️ Không có nhân viên nào thuộc Kíp đã chọn.</div>
+  {% endif %}
+{% endif %}
+
+{% endblock %}

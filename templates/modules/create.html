@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>➕ Thêm module mới</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="ModuleCode" class="form-label">Mã module</label>
+            <input type="text" class="form-control" id="ModuleCode" name="ModuleCode" required>
+        </div>
+        <div class="mb-3">
+            <label for="ModuleName" class="form-label">Tên module</label>
+            <input type="text" class="form-control" id="ModuleName" name="ModuleName" required>
+        </div>
+        <div class="mb-3">
+            <label for="Description" class="form-label">Mô tả</label>
+            <input type="text" class="form-control" id="Description" name="Description">
+        </div>
+        <button type="submit" class="btn btn-primary">💾 Lưu</button>
+        <a href="{{ url_for('module.list_modules') }}" class="btn btn-secondary">↩️ Quay lại</a>
+    </form>
+</div>
+{% endblock %}

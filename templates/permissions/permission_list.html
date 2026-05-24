@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>📋 Danh sách quyền hệ thống</h3>
+
+<a href="{{ url_for('permission_manage.permission_create') }}" class="btn btn-primary mb-3">➕ Thêm quyền cho module</a>
+
+<table class="table table-bordered table-hover">
+  <thead class="table-light">
+    <tr>
+      <th>#</th>
+      <th>Module</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in permissions %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ p.ModuleCode }}</td>
+      <td>{{ p.Action }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
