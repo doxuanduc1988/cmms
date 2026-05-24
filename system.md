@@ -88,19 +88,22 @@ Mỗi module chức năng là một Flask Blueprint riêng biệt, được đă
 
 ## 4. Quản lý Quyền Truy Cập (RBAC)
 
-Hệ thống sử dụng cơ chế phân quyền dựa trên **Role-Based Access Control**:
+Hệ thống dùng **RBAC 3 lớp** (`utils/permission_utils.py`):
 
-| Model            | Mô tả                                      |
-|------------------|---------------------------------------------|
-| `Role`           | Vai trò (Admin, Nhân sự, Trưởng phòng...) |
-| `Module`         | Module chức năng (hr, roles, attendance...) |
-| `Permission`     | Hành động trên module (create, read, update, delete) |
-| `RolePermission` | Bảng mapping Role ↔ Permission             |
+| Lớp | Action | Mô tả |
+|-----|--------|--------|
+| Vào phân hệ | `access` | Thấy thẻ dashboard, được vào module |
+| Thao tác | `read`, `create`, `update`, `delete` | CRUD (đã bỏ bypass read) |
+| Phạm vi | session `data_scopes` | `all` / `department` / `self` |
 
-### Cách hoạt động:
-- **Backend**: Decorator `@check_permission("module_code", "action")` bảo vệ routes.
-- **Frontend**: Hàm `has_permission` được inject vào Jinja context để ẩn/hiện UI elements.
-- **Audit**: Mọi thao tác quan trọng được ghi vào bảng `AuditLogs`.
+| Model | Mô tả |
+|-------|--------|
+| `Role`, `Module`, `Permission`, `RolePermission`, `EmployeeRoles` | Chuẩn RBAC |
+
+- **Đồng bộ DB:** `python setup_rbac.py` (hoặc `python reseed_permissions.py`)
+- **Backend:** `@check_permission("module_code", "action")`
+- **Frontend:** `has_permission()`, `has_module_access()` trong Jinja
+- **Modules:** `system_admin`, `hr`, `hr_salary`, `hr_health`, `department`, `attendance`, `crew`, `procurement`, `estimation`
 
 ---
 

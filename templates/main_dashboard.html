@@ -234,6 +234,7 @@
         </section>
 
         <div class="dashboard-grid">
+            {% if has_module_access('hr') %}
             <a href="/dashboard/hr" class="card-link">
                 <div class="icon-box color-hr"><i class="fas fa-id-card-alt"></i></div>
                 <div class="card-info">
@@ -241,7 +242,9 @@
                     <p>Quản lý dữ liệu cán bộ, hợp đồng và hồ sơ công tác.</p>
                 </div>
             </a>
+            {% endif %}
 
+            {% if has_module_access('attendance') %}
             <a href="/dashboard/attendance" class="card-link">
                 <div class="icon-box color-att"><i class="fas fa-user-clock"></i></div>
                 <div class="card-info">
@@ -249,7 +252,9 @@
                     <p>Quản lý thời gian biểu, phê duyệt tăng ca và báo cáo.</p>
                 </div>
             </a>
+            {% endif %}
 
+            {% if has_module_access('estimation') %}
             <a href="/estimation/" class="card-link">
                 <div class="icon-box color-est"><i class="fas fa-calculator"></i></div>
                 <div class="card-info">
@@ -257,7 +262,9 @@
                     <p>Tính toán định mức nhân công và vật tư bảo dưỡng.</p>
                 </div>
             </a>
+            {% endif %}
 
+            {% if has_module_access('procurement') %}
             <a href="/procurement/" class="card-link">
                 <div class="icon-box color-pro"><i class="fas fa-shopping-bag"></i></div>
                 <div class="card-info">
@@ -265,7 +272,9 @@
                     <p>Quản lý kế hoạch lựa chọn nhà thầu và các gói thầu.</p>
                 </div>
             </a>
+            {% endif %}
 
+            {% if has_module_access('system_admin') %}
             <a href="/dashboard/accounts" class="card-link">
                 <div class="icon-box color-sys"><i class="fas fa-sliders"></i></div>
                 <div class="card-info">
@@ -273,14 +282,17 @@
                     <p>Quản trị tài khoản, phân quyền và cài đặt chung.</p>
                 </div>
             </a>
+            {% endif %}
 
-            <a href="/procurement/logs" class="card-link">
+            {% if has_permission('system_admin', 'read') %}
+            <a href="/audit/logs" class="card-link">
                 <div class="icon-box color-log"><i class="fas fa-terminal"></i></div>
                 <div class="card-info">
                     <h3>Nhật ký thao tác</h3>
                     <p>Truy vết lịch sử hoạt động của người dùng hệ thống.</p>
                 </div>
             </a>
+            {% endif %}
         </div>
     </main>
 

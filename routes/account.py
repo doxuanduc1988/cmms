@@ -1,20 +1,17 @@
 # ===== routes/accounts.py =====
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
-
-from werkzeug.security import generate_password_hash, check_password_hash
-
-from flask import session
-
-from models.hr.employee_model import Employee
-from models.roles import Role
-from extensions import db
-from models.audit_logs import AuditLog
-from utils.password_utils import hash_password, check_password
-
 import random
 import string
 from datetime import datetime
+
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask_login import current_user, login_required
+
+from extensions import db
+from models.audit_logs import AuditLog
+from models.hr.employee_model import Employee
+from models.roles import Role
+from utils.password_utils import check_password, hash_password
+from utils.permission_utils import check_permission
 
 account_bp = Blueprint("account", __name__, url_prefix="/accounts")
 
@@ -25,6 +22,7 @@ def generate_temp_password(length=8):
 
 @account_bp.route("/")
 @login_required
+@check_permission("system_admin", "read")
 def list_accounts():
     employees = Employee.query.all()
     return render_template("accounts/list.html", employees=employees)
@@ -32,6 +30,7 @@ def list_accounts():
 
 @account_bp.route("/create", methods=["GET", "POST"])
 @login_required
+@check_permission("system_admin", "create")
 def create_account():
     roles = Role.query.all()
     if request.method == "POST":
@@ -39,7 +38,7 @@ def create_account():
             EmployeeID=request.form["EmployeeID"],
             FullName=request.form["FullName"],
             Username=request.form["Username"],
-            PasswordHash=generate_password_hash(request.form["Password"]),
+            PasswordHash=hash_password(request.form["Password"]),
             Status=request.form.get("Status", "active"),
             Email=request.form.get("Email"),
             Phone=request.form.get("Phone"),
@@ -56,11 +55,12 @@ def create_account():
 
 @account_bp.route("/change_password/<EmployeeID>", methods=["GET", "POST"])
 @login_required
+@check_permission("system_admin", "update")
 def change_password(EmployeeID):
     emp = Employee.query.get_or_404(EmployeeID)
     if request.method == "POST":
         new_password = request.form["Password"]
-        emp.PasswordHash = generate_password_hash(new_password)
+        emp.PasswordHash = hash_password(new_password)
         db.session.commit()
         flash("🔐 Đã đổi mật khẩu", "success")
         return redirect(url_for("account.list_accounts"))
@@ -83,34 +83,33 @@ def change_own_password():
 
         if not user.PasswordHash or not user.PasswordHash.strip():
             flash(
-                "❌ Tài khoản hiện tại chưa có mật khẩu. Vui lòng liên hệ quản trị viên để đặt lại mật khẩu.", "danger"
+                "❌ Tài khoản hiện tại chưa có mật khẩu. Vui lòng liên hệ quản trị viên để đặt lại mật khẩu.",
+                "danger",
             )
             return redirect(url_for("account.change_own_password"))
 
-        # ✅ Dùng check_password trong utils để kiểm tra đúng kiểu băm
         if not check_password(current_password, user.PasswordHash):
             flash("❌ Mật khẩu hiện tại không hợp lệ. Vui lòng liên hệ quản trị viên.", "danger")
             return redirect(url_for("account.change_own_password"))
 
-        # ✅ Hash lại mật khẩu mới bằng bcrypt
         user.PasswordHash = hash_password(new_password)
         db.session.commit()
 
         flash("✅ Đổi mật khẩu thành công!", "success")
-        return redirect(url_for("dashboard_accounts"))
+        return redirect(url_for("dashboard.dashboard"))
 
     return render_template("accounts/change_own_password.html")
 
 
 @account_bp.route("/reset_password/<EmployeeID>", methods=["POST"])
 @login_required
+@check_permission("system_admin", "update")
 def reset_password(EmployeeID):
     emp = Employee.query.get_or_404(EmployeeID)
     new_password = generate_temp_password()
-    emp.PasswordHash = generate_password_hash(new_password)
+    emp.PasswordHash = hash_password(new_password)
     db.session.commit()
 
-    # ✅ Ghi log người reset
     log = AuditLog(
         EmployeeID=current_user.EmployeeID,
         Module="Accounts",

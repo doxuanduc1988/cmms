@@ -6,18 +6,16 @@ from models.attendance.approval_flow import AttendanceApprovalFlow
 from models.hr.employee_model import Employee
 import copy
 from utils.attendance_log_utils import log_attendance_change_from_objects
-from utils.auth_utils import login_required
+from flask_login import login_required
+from utils.permission_utils import check_permission
 
 attendance_rejected_bp = Blueprint("attendance_rejected", __name__)
 
 
 @attendance_rejected_bp.route("/attendance/rejected")
 @login_required
+@check_permission("attendance", "update")
 def list_rejected_attendance():
-    role = session.get("role", "").lower()
-    if role not in ("admin", "nhansu"):
-        abort(403)
-
     subquery = (
         db.session.query(
             AttendanceApprovalFlow.AttendanceID,
@@ -52,11 +50,8 @@ def list_rejected_attendance():
 
 @attendance_rejected_bp.route("/attendance/rejected/resubmit", methods=["POST"])
 @login_required
+@check_permission("attendance", "update")
 def resubmit_rejected_attendance():
-    role = session.get("role", "").lower()
-    if role not in ("admin", "nhansu"):
-        abort(403)
-
     ids = request.form.getlist("attendance_ids")
     if not ids:
         flash("⚠️ Bạn chưa chọn dòng nào để chấm lại!", "warning")
@@ -80,11 +75,8 @@ def resubmit_rejected_attendance():
 
 @attendance_rejected_bp.route("/attendance/rejected/edit/<int:attendance_id>", methods=["GET", "POST"])
 @login_required
+@check_permission("attendance", "update")
 def edit_rejected_attendance(attendance_id):
-    role = session.get("role", "").lower()
-    if role not in ("admin", "nhansu"):
-        abort(403)
-
     attendance = Attendance.query.filter_by(AttendanceID=attendance_id).first()
     status = AttendanceApprovalStatus.query.filter_by(AttendanceID=attendance_id).first()
 

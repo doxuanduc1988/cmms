@@ -1,4 +1,7 @@
 from flask import Blueprint, render_template, request
+from flask_login import login_required
+
+from utils.permission_utils import check_permission
 from models.hr.hr_profiles import HRProfile
 from models.attendance.attendance_model import Attendance
 from models.attendance.crew_model import CrewDefinition
@@ -11,6 +14,8 @@ attendance_summary_bp = Blueprint("attendance_summary", __name__, url_prefix="/a
 
 
 @attendance_summary_bp.route("/monthly_summary", methods=["GET"])
+@login_required
+@check_permission("attendance", "read")
 def monthly_summary():
     selected_month = int(request.args.get("month", datetime.today().month))
     selected_year = int(request.args.get("year", datetime.today().year))

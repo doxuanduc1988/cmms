@@ -9,10 +9,11 @@ with app.app_context():
     
     # Định nghĩa các action chuẩn và tên mô tả
     STANDARD_ACTIONS = {
+        "access": "Truy cập phân hệ",
         "read": "Xem",
         "create": "Thêm mới",
         "update": "Cập nhật",
-        "delete": "Xóa"
+        "delete": "Xóa",
     }
 
     # Đổi tên tất cả 'edit' thành 'update'

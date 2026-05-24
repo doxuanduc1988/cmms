@@ -57,7 +57,13 @@ def sync_modules():
             # Đăng ký Permissions nếu chưa có
             for act in actions:
                 # Chuẩn hóa tên action
-                desc_prefix = {"create": "Thêm mới", "update": "Cập nhật", "delete": "Xóa", "read": "Xem"}.get(act, act.capitalize())
+                desc_prefix = {
+                    "access": "Truy cập phân hệ",
+                    "create": "Thêm mới",
+                    "update": "Cập nhật",
+                    "delete": "Xóa",
+                    "read": "Xem",
+                }.get(act, act.capitalize())
                 
                 perm = Permission.query.filter_by(ModuleID=mod.ModuleID, Action=act).first()
                 if not perm:

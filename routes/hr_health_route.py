@@ -11,7 +11,7 @@ hr_health_bp = Blueprint("hr_health", __name__, url_prefix="/hr/<employee_id>/he
 
 
 @hr_health_bp.route("/", methods=["GET", "POST"])
-@check_permission("hr", "create")
+@check_permission("hr_health", "create")
 def list_health(employee_id):
     if request.method == "POST":
         try:
@@ -42,7 +42,7 @@ def list_health(employee_id):
 
 
 @hr_health_bp.route("/edit/<int:health_id>", methods=["GET", "POST"])
-@check_permission("hr", "update")
+@check_permission("hr_health", "update")
 def edit_health(employee_id, health_id):
     record = HRHealthInfo.query.get_or_404(health_id)
     if request.method == "POST":
@@ -74,7 +74,7 @@ def edit_health(employee_id, health_id):
 
 
 @hr_health_bp.route("/delete/<int:health_id>", methods=["POST"])
-@check_permission("hr", "delete")
+@check_permission("hr_health", "delete")
 def delete_health(employee_id, health_id):
     record = HRHealthInfo.query.get(health_id)
     if record:
@@ -90,7 +90,7 @@ def delete_health(employee_id, health_id):
 
 
 @hr_health_bp.route("/search", methods=["GET"])
-@check_permission("hr", "read")
+@check_permission("hr_health", "read")
 def search_health():
     query = request.args.get("query", "").strip()
     from models.hr_profiles import HRProfile

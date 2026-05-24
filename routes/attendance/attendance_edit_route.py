@@ -11,16 +11,16 @@ from datetime import datetime, timedelta
 import copy
 from models import db
 from utils.attendance_log_utils import log_attendance_change_from_objects
+from flask_login import login_required
+from utils.permission_utils import check_permission
 
 attendance_edit_bp = Blueprint("attendance_edit", __name__, url_prefix="/attendance")
 
 
 @attendance_edit_bp.route("/edit/<int:attendance_id>", methods=["GET", "POST"])
+@login_required
+@check_permission("attendance", "update")
 def edit_attendance(attendance_id):
-    role = session.get("role", "").lower()
-    if role not in ("admin", "nhansu", "hanhchinh"):
-        abort(403)
-
     attendance = Attendance.query.get_or_404(attendance_id)
 
     # ✅ Bổ sung dòng sau để ép join HRProfile

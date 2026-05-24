@@ -15,7 +15,9 @@ permission_bp = Blueprint("permission", __name__, url_prefix="/permissions")
 @check_permission("system_admin", "update")
 def manage_permissions():
     roles = Role.query.all()
-    permissions = Permission.query.all()
+    from sqlalchemy.orm import joinedload
+
+    permissions = Permission.query.options(joinedload(Permission.module)).order_by(Permission.ModuleID, Permission.Action).all()
 
     # selected_role_id = request.form.get("role") if request.method == "POST" else None
     selected_role_id = request.form.get("role") if request.method == "POST" else request.args.get("role")

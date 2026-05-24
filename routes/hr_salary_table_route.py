@@ -7,14 +7,14 @@ salary_table_bp = Blueprint("salary_table", __name__, url_prefix="/salary-table"
 
 
 @salary_table_bp.route("/")
-@check_permission("hr", "read")
+@check_permission("hr_salary", "read")
 def salary_table_list():
     salary_table = HRSalaryTable.query.order_by(HRSalaryTable.SalaryCode).all()
     return render_template("hr/salary_table_list.html", salary_table=salary_table)
 
 
 @salary_table_bp.route("/create", methods=["GET", "POST"])
-@check_permission("hr", "create")
+@check_permission("hr_salary", "create")
 def salary_table_create():
     if request.method == "POST":
         new_item = HRSalaryTable(
@@ -30,7 +30,7 @@ def salary_table_create():
 
 
 @salary_table_bp.route("/<code>/edit", methods=["GET", "POST"])
-@check_permission("hr", "update")
+@check_permission("hr_salary", "update")
 def salary_table_edit(code):
     record = HRSalaryTable.query.get_or_404(code)
     if request.method == "POST":
@@ -43,7 +43,7 @@ def salary_table_edit(code):
 
 
 @salary_table_bp.route("/<code>/delete", methods=["POST"])
-@check_permission("hr", "delete")
+@check_permission("hr_salary", "delete")
 def salary_table_delete(code):
     record = HRSalaryTable.query.get_or_404(code)
     db.session.delete(record)

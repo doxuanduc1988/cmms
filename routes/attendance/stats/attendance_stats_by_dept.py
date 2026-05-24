@@ -1,13 +1,19 @@
-from flask import Blueprint, render_template, request
 from datetime import datetime
+
+from flask import Blueprint, render_template, request
+from flask_login import login_required
+
 from models import db
 from models.attendance.attendance_model import Attendance
 from models.hr.hr_profiles import HRProfile
+from utils.permission_utils import check_permission
 
 attendance_stats_bp = Blueprint("attendance_stats", __name__)
 
 
 @attendance_stats_bp.route("/attendance/stats/department", methods=["GET"])
+@login_required
+@check_permission("attendance", "read")
 def attendance_stats():
     month = int(request.args.get("month", datetime.today().month))
     year = int(request.args.get("year", datetime.today().year))

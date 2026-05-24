@@ -1,4 +1,7 @@
 from flask import Blueprint, render_template, request
+from flask_login import login_required
+
+from utils.permission_utils import check_permission
 from models.hr.hr_profiles import HRProfile
 from models.attendance.attendance_model import Attendance
 from models.hr.department_model import Department
@@ -9,6 +12,8 @@ attendance_unmarked_bp = Blueprint("attendance_unmarked", __name__, url_prefix="
 
 
 @attendance_unmarked_bp.route("/", methods=["GET", "POST"])
+@login_required
+@check_permission("attendance", "read")
 def view_unmarked_attendance():
     employees = []
     selected_date = None

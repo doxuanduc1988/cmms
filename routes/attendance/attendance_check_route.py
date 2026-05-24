@@ -1,4 +1,7 @@
-from flask import Blueprint, render_template, request, session, abort
+from flask import Blueprint, render_template, request, session
+from flask_login import login_required
+
+from utils.permission_utils import check_permission
 from models.attendance.attendance_model import Attendance
 from models.hr.hr_profiles import HRProfile
 from models.hr.department_model import Department
@@ -13,10 +16,9 @@ attendance_check_bp = Blueprint("attendance_check", __name__, url_prefix="/atten
 
 
 @attendance_check_bp.route("/", methods=["GET", "POST"])
+@login_required
+@check_permission("attendance", "read")
 def check_attendance():
-    role = session.get("role", "").lower()
-    if role not in ("admin", "nhansu", "hanhchinh"):
-        abort(403)
     departments = Department.query.all()
     shifts = ShiftDefinition.query.all()
     crews = CrewDefinition.query.all()

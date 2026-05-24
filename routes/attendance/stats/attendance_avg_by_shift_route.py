@@ -1,13 +1,18 @@
-from flask import Blueprint, render_template, request
 from datetime import datetime
+
+from flask import Blueprint, render_template, request
+from flask_login import login_required
+
 from models import db
 from models.attendance.attendance_model import Attendance
 from models.hr.hr_profiles import HRProfile
+from utils.permission_utils import check_permission
 
 attendance_avg_shift_bp = Blueprint("attendance_avg_shift", __name__)
 
-
 @attendance_avg_shift_bp.route("/attendance/stats/shift")
+@login_required
+@check_permission("attendance", "read")
 def attendance_avg_by_shift():
     month = int(request.args.get("month", datetime.today().month))
     year = int(request.args.get("year", datetime.today().year))
@@ -37,6 +42,8 @@ def attendance_avg_by_shift():
 
 
 @attendance_avg_shift_bp.route("/attendance/stats/heatmap")
+@login_required
+@check_permission("attendance", "read")
 def attendance_heatmap():
     month = int(request.args.get("month", datetime.today().month))
     year = int(request.args.get("year", datetime.today().year))
@@ -70,6 +77,8 @@ def attendance_heatmap():
 
 
 @attendance_avg_shift_bp.route("/attendance/stats/line")
+@login_required
+@check_permission("attendance", "read")
 def attendance_line_by_day():
     month = int(request.args.get("month", datetime.today().month))
     year = int(request.args.get("year", datetime.today().year))

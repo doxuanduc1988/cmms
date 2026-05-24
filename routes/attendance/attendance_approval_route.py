@@ -7,7 +7,8 @@ from models.attendance.crew_model import CrewDefinition
 from extensions import db
 from datetime import datetime
 from copy import deepcopy
-from utils.auth_utils import login_required
+from flask_login import login_required
+from utils.permission_utils import check_permission
 from utils.attendance_log_utils import log_attendance_change_from_objects
 import copy
 from utils.approval_utils import get_approval_level_from_role
@@ -22,6 +23,8 @@ attendance_approval_bp = Blueprint("attendance_approval", __name__, url_prefix="
 
 @attendance_approval_bp.route("/attendance/approval/approve/<int:attendance_id>", methods=["POST"])
 @login_required
+@check_permission("attendance", "update")
+@require_approval_roles("truongphong", "hanhchinh", "nhansu")
 def approve_attendance(attendance_id):
     role = session.get("role", "").lower()
     user = session.get("username", "unknown")
@@ -87,6 +90,8 @@ def approve_attendance(attendance_id):
 
 
 @attendance_approval_bp.route("/form/<int:attendance_id>")
+@login_required
+@check_permission("attendance", "read")
 @require_approval_roles("truongphong", "hanhchinh", "nhansu")
 def show_approval_form(attendance_id):
     attendance = Attendance.query.get_or_404(attendance_id)
@@ -99,6 +104,8 @@ def show_approval_form(attendance_id):
 
 @attendance_approval_bp.route("/attendance/approval/reject/<int:attendance_id>", methods=["POST"])
 @login_required
+@check_permission("attendance", "update")
+@require_approval_roles("truongphong", "hanhchinh", "nhansu")
 def reject_attendance(attendance_id):
     role = session.get("role", "").lower()
     user = session.get("username", "unknown")
@@ -148,6 +155,8 @@ def reject_attendance(attendance_id):
 
 
 @attendance_approval_bp.route("/pending")
+@login_required
+@check_permission("attendance", "read")
 @require_approval_roles("truongphong", "hanhchinh")
 def list_pending_approvals():
 
@@ -194,6 +203,8 @@ def list_pending_approvals():
 
 
 @attendance_approval_bp.route("/auditlog", methods=["GET"])
+@login_required
+@check_permission("attendance", "read")
 @require_approval_roles("truongphong", "hanhchinh", "nhansu")
 def view_audit_log():
     from models.attendance.attendance_edit_log import AttendanceEditLog
@@ -219,6 +230,8 @@ def view_audit_log():
 
 
 @attendance_approval_bp.route("/approved")
+@login_required
+@check_permission("attendance", "read")
 @require_approval_roles("truongphong", "hanhchinh", "nhansu")
 def list_approved():
     records = (
@@ -232,6 +245,8 @@ def list_approved():
 
 
 @attendance_approval_bp.route("/rejected")
+@login_required
+@check_permission("attendance", "read")
 @require_approval_roles("truongphong", "hanhchinh", "nhansu")
 def list_rejected():
     records = (
@@ -245,6 +260,9 @@ def list_rejected():
 
 
 @attendance_approval_bp.route("/auditlog/export")
+@login_required
+@check_permission("attendance", "read")
+@require_approval_roles("truongphong", "hanhchinh", "nhansu")
 def export_audit_log_excel():
     from models.attendance.attendance_edit_log import AttendanceEditLog
 
@@ -305,6 +323,8 @@ def export_audit_log_excel():
 
 
 @attendance_approval_bp.route("/bulk/approve", methods=["POST"])
+@login_required
+@check_permission("attendance", "update")
 @require_approval_roles("truongphong", "hanhchinh", "nhansu")
 def bulk_approve():
     ids = request.form.getlist("attendance_ids")
@@ -359,6 +379,8 @@ def bulk_approve():
 
 
 @attendance_approval_bp.route("/bulk/reject", methods=["POST"])
+@login_required
+@check_permission("attendance", "update")
 @require_approval_roles("truongphong", "hanhchinh", "nhansu")
 def bulk_reject():
     ids = request.form.getlist("attendance_ids")

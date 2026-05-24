@@ -10,7 +10,7 @@ salary_history_bp = Blueprint("salary_history", __name__, url_prefix="/hr")
 
 
 @salary_history_bp.route("/<employee_id>/salary-history")
-@check_permission("hr", "read")
+@check_permission("hr_salary", "read")
 def salary_history_list(employee_id):
     employee = HRProfile.query.get_or_404(employee_id)
     history = (
@@ -20,7 +20,7 @@ def salary_history_list(employee_id):
 
 
 @salary_history_bp.route("/<employee_id>/salary-history/create", methods=["GET", "POST"])
-@check_permission("hr", "create")
+@check_permission("hr_salary", "create")
 def salary_history_create(employee_id):
     employee = HRProfile.query.get_or_404(employee_id)
 
@@ -58,7 +58,7 @@ def salary_history_create(employee_id):
 
 
 @salary_history_bp.route("/<employee_id>/salary-history/<int:salary_id>/edit", methods=["GET", "POST"])
-@check_permission("hr", "update")
+@check_permission("hr_salary", "update")
 def salary_history_edit(employee_id, salary_id):
     employee = HRProfile.query.get_or_404(employee_id)
     record = HRSalaryHistory.query.get_or_404(salary_id)
@@ -93,7 +93,7 @@ def salary_history_edit(employee_id, salary_id):
 
 
 @salary_history_bp.route("/<employee_id>/salary-history/<int:salary_id>/delete", methods=["POST"])
-@check_permission("hr", "delete")
+@check_permission("hr_salary", "delete")
 def salary_history_delete(employee_id, salary_id):
     record = HRSalaryHistory.query.get_or_404(salary_id)
     db.session.delete(record)

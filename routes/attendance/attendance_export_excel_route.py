@@ -1,4 +1,7 @@
 from flask import Blueprint, send_file, request
+from flask_login import login_required
+
+from utils.permission_utils import check_permission
 
 # from weasyprint import HTML
 from io import BytesIO
@@ -13,6 +16,8 @@ attendance_pdf_bp = Blueprint("attendance_pdf", __name__)
 
 
 @attendance_export_bp.route("/export_monthly_excel", methods=["GET"])
+@login_required
+@check_permission("attendance", "read")
 def export_excel():
     try:
         month = int(request.args.get("month", "").strip())

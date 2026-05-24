@@ -8,7 +8,7 @@ from models.hr.hr_profiles import HRProfile
 from models.hr.department_model import Department
 from models.hr.job_position_model import JobPosition
 
-from utils.permission_utils import check_permission
+from utils.permission_utils import apply_department_scope, check_permission
 from routes.hr_salary_history import salary_history_bp
 from werkzeug.utils import secure_filename
 
@@ -41,6 +41,7 @@ def list_profiles():
     query = HRProfile.query.join(JobPosition, HRProfile.JobPositionID == JobPosition.JobPositionID, isouter=True).join(
         Department, HRProfile.DepartmentCode == Department.DepartmentCode, isouter=True
     )
+    query = apply_department_scope(query, HRProfile, module_code="hr")
 
     if search:
         term = f"%{search}%"

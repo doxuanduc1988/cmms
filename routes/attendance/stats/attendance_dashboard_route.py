@@ -1,5 +1,8 @@
 from flask import Blueprint, render_template, request
+from flask_login import login_required
+
 from models import db
+from utils.permission_utils import check_permission
 from models.attendance.attendance_model import Attendance
 from models.hr.hr_profiles import HRProfile
 from sqlalchemy import extract, func
@@ -9,6 +12,8 @@ stats_dashboard_bp = Blueprint("stats_dashboard", __name__, url_prefix="/attenda
 
 
 @stats_dashboard_bp.route("/dashboard")
+@login_required
+@check_permission("attendance", "read")
 def attendance_dashboard():
     month = int(request.args.get("month", 5))
     year = int(request.args.get("year", 2025))

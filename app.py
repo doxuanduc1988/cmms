@@ -19,7 +19,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from extensions import db
 
 # ---------- Local: Utils ----------
-from utils.permission_utils import has_permission, has_permission_view
+from utils.permission_utils import has_module_access, has_module_access_view, has_permission, has_permission_view
 
 # ---------- Local: Config ----------
 from config import ENFORCE_DATE_LOCK, UPLOAD_FOLDER_HEALTH
@@ -101,6 +101,7 @@ from routes.procurement import procurement_bp
 
 # --- Dự toán ---
 from routes.estimation import estimation_bp
+from routes.modules import module_bp
 
 # =============================================================================
 # KHỞI TẠO ỨNG DỤNG
@@ -193,6 +194,7 @@ _blueprints = [
     role_bp,
     permission_bp,
     permission_manage_bp,
+    module_bp,
     # Audit
     audit_bp,
     # Tổ / Ca / Phân công
@@ -235,11 +237,15 @@ for bp in _blueprints:
 # =============================================================================
 
 app.jinja_env.globals["has_permission"] = has_permission
+app.jinja_env.globals["has_module_access"] = has_module_access
 
 
 @app.context_processor
 def inject_permissions():
-    return dict(has_permission=has_permission_view)
+    return dict(
+        has_permission=has_permission_view,
+        has_module_access=has_module_access_view,
+    )
 
 
 # =============================================================================

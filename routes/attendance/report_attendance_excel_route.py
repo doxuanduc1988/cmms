@@ -1,4 +1,7 @@
 from flask import Blueprint, request, send_file
+from flask_login import login_required
+
+from utils.permission_utils import check_permission
 from models.attendance.attendance_model import Attendance
 from models.hr.hr_profiles import HRProfile
 from models.attendance.crew_model import CrewDefinition
@@ -13,6 +16,8 @@ report_bp = Blueprint("report", __name__, url_prefix="/attendance/report")
 
 
 @report_bp.route("/export_excel")
+@login_required
+@check_permission("attendance", "read")
 def export_attendance_excel():
     selected_date = request.args.get("selected_date")
     department_code = request.args.get("department_code")

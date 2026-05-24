@@ -7,7 +7,8 @@ from datetime import datetime, timedelta
 from utils.attendance_utils import update_ot_and_working_hours
 from config import ENFORCE_DATE_LOCK
 from utils.attendance_log_utils import log_attendance_edit
-from utils.auth_utils import login_required
+from flask_login import login_required
+from utils.permission_utils import check_permission
 
 attendance_create_bp = Blueprint("attendance_create", __name__, url_prefix="/attendance")
 
@@ -27,11 +28,8 @@ def estimate_shift_id(check_in):
 
 @attendance_create_bp.route("/create", methods=["GET", "POST"])
 @login_required
+@check_permission("attendance", "create")
 def create_attendance():
-    role = session.get("role", "").lower()
-    if role not in ("admin", "nhansu"):
-        abort(403)
-
     emp_id = request.args.get("employee_id") if request.method == "GET" else request.form.get("EmployeeID")
     date = request.args.get("date") if request.method == "GET" else request.form.get("Date")
     employee = HRProfile.query.filter_by(EmployeeID=emp_id).first() if emp_id else None

@@ -14,7 +14,7 @@ from utils.attendance_validation_utils import validate_bulk_attendance
 from utils.attendance_utils import update_ot_and_working_hours
 from utils.attendance_log_utils import log_attendance_edit
 from utils.auth_utils import login_required
-from utils.permission_utils import check_permission
+from utils.permission_utils import check_permission, get_data_scope, user_is_system_admin
 
 
 # from flask import abort
@@ -44,15 +44,10 @@ SHIFT_TIME_DEFAULTS = {
 @login_required
 @check_permission("attendance", "create")
 def bulk_create_attendance():
-    role = session.get("role", "").lower()
-    if role not in ("admin", "nhansu"):
-        abort(403)
+    user_dept = session.get("department_code")
+    scope = get_data_scope("attendance")
 
-    # 🧩 Debug phân quyền
-    print("🧩 DEPT:", session.get("department_code"))
-    print("🧩 CREW:", session.get("crew_id"))
-
-    if role in ("admin", "nhansu"):
+    if scope == "all" or user_is_system_admin():
         departments = Department.query.all()
         crews = CrewDefinition.query.all()
     else:
@@ -79,8 +74,11 @@ def bulk_create_attendance():
         department_code = request.form.get("department_code")
         crew_id = request.form.get("crew_id")
 
-        # 🔒 Kiểm tra phân quyền phòng ban (Bỏ qua cho Admin/Nhansu)
-        if role not in ("admin", "nhansu") and user_dept and department_code != user_dept:
+        # 🔒 Phạm vi phòng ban / cá nhân
+        scope = get_data_scope("attendance")
+        if scope == "self":
+            abort(403)
+        if scope == "department" and user_dept and department_code != user_dept:
             return redirect(url_for("attendance_bulk.bulk_create_attendance"))
 
         # Lọc danh sách nhân viên theo CrewAssignment nếu có crew_id
@@ -141,8 +139,9 @@ def bulk_create_attendance():
 @login_required
 @check_permission("attendance", "create")
 def bulk_save_attendance():
-    role = session.get("role", "").lower()
-    if role not in ("admin", "nhansu"):
+    user_dept = session.get("department_code")
+    scope = get_data_scope("attendance")
+    if scope == "self":
         abort(403)
 
     selected_date = request.form.get("selected_date")

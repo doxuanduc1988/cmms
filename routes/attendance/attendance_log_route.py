@@ -1,4 +1,7 @@
 from flask import Blueprint, render_template, request
+from flask_login import login_required
+
+from utils.permission_utils import check_permission
 from models.attendance.attendance_edit_log import AttendanceEditLog
 from models.hr.hr_profiles import HRProfile
 from models.hr.department_model import Department
@@ -10,6 +13,8 @@ attendance_log_bp = Blueprint("attendance_log", __name__, url_prefix="/attendanc
 
 
 @attendance_log_bp.route("/", methods=["GET", "POST"])
+@login_required
+@check_permission("attendance", "read")
 def view_logs():
     logs = []
     employee_id = None

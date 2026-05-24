@@ -1,27 +1,53 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Logs
+# Virtual environments (KHÔNG commit)
+myvenv/
+venv/
+.venv/
+env/
+
+# Logs & runtime
 logs/
 *.log
 
-# Backup
+# Backup & DB dumps
 backup/
 *.bak
 *.sql
 
-# Uploads (RẤT QUAN TRỌNG)
+# Uploads (dữ liệu runtime — không đưa lên Git)
 uploads/
 static/uploads/
 
-# DB
+# Local DB files
 *.db
 *.sqlite3
 
-# Env
+# Secrets
 .env
+.env.*
+!.env.example
 
-# System
+# IDE / OS
 .vscode/
 .idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Scratch / test one-offs (không dùng trong production)
+scratch/
+test_*.py
+
+# Docker volumes (nếu mount local)
+mariadb_data/

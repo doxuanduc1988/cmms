@@ -669,7 +669,7 @@ class SimplePagination:
 # ===================== Routes: logs =====================
 @procurement_bp.route("/logs", methods=["GET"])
 @login_required
-@check_permission("procurement", "read")
+@check_permission("system_admin", "read")
 def procurement_logs():
     """Hiển thị log thao tác tổ chuyên gia/tổ thẩm định (tối đa 500 dòng).
 

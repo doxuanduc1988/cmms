@@ -38,6 +38,28 @@ cd CMMS
 sudo docker-compose up -d --build
 ```
 
+### Bước 3b: Đồng bộ phân quyền RBAC (sau khi DB đã có dữ liệu)
+
+**Trong container** (khuyến nghị):
+
+```bash
+docker compose exec web python fix_permissions.py
+docker compose exec web python setup_rbac.py
+```
+
+**Trên máy host** (cần virtualenv — `python3` thường không có Flask):
+
+```bash
+cd ~/cmms
+python3 -m venv myvenv
+source myvenv/bin/activate
+pip install -r requirements.txt
+python fix_permissions.py
+python setup_rbac.py
+```
+
+Sau đó gán role cho user trong UI và **đăng nhập lại**.
+
 ### Bước 4: Restore dữ liệu vào SQL Server Docker
 Sau khi các container đã chạy, thực hiện lệnh sau để restore file `.bak`:
 

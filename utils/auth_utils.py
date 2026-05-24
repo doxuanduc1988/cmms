@@ -1,6 +1,8 @@
 from functools import wraps
-from flask import redirect, url_for, flash, session
-from flask import abort
+
+from flask import abort, flash, redirect, session, url_for
+
+from utils.permission_utils import user_has_any_role, user_is_system_admin
 
 
 def login_required(view_func):
@@ -15,16 +17,14 @@ def login_required(view_func):
 
 
 def require_approval_roles(*roles):
+    """Duyệt chấm công: admin, truongphong, hanhchinh, nhansu (theo session role_names)."""
+
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            user_role = session.get("role", "").lower()
-            print("⚠️ ROLE hiện tại:", user_role)
-            if user_role == "admin":
+            if user_is_system_admin() or user_has_any_role(*roles):
                 return f(*args, **kwargs)
-            if user_role not in [r.lower() for r in roles]:
-                abort(403)
-            return f(*args, **kwargs)
+            abort(403)
 
         return wrapper
 

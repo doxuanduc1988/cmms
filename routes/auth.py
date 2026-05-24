@@ -6,6 +6,7 @@ from flask_login import login_user, logout_user, login_required
 from models.hr.employee_model import Employee
 from extensions import db
 from utils.password_utils import hash_password, check_password  # ✅ dùng bcrypt
+from utils.permission_utils import refresh_session_permissions, clear_session_permissions
 
 # from werkzeug.security import check_password_hash
 
@@ -30,15 +31,9 @@ def login():
         else:
             login_user(user)
             session["employee_id"] = user.EmployeeID
-            
-            # 🔐 Xử lý nhiều vai trò
-            user_roles = user.roles.all()
             session["full_name"] = user.FullName or user.Username or "Chưa cập nhật"
-            session["role_name"] = ", ".join([r.RoleName for r in user_roles]) if user_roles else "Chưa phân vai"
-            session["role_id"] = user_roles[0].RoleID if user_roles else None
-            session["role"] = user_roles[0].RoleName.lower() if user_roles else ""
-            
             session["department_code"] = user.DepartmentCode
+            refresh_session_permissions(user)
 
             return redirect(url_for("dashboard.dashboard"))
 
@@ -48,6 +43,7 @@ def login():
 @auth_bp.route("/logout")
 @login_required
 def logout():
+    clear_session_permissions()
     session.clear()
     logout_user()
     flash("🚪 Đã đăng xuất", "info")
