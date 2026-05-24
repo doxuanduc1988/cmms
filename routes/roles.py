@@ -6,6 +6,9 @@ from models import Role, Module, Permission, RolePermission
 from utils.auth_utils import login_required
 from utils.permission_utils import check_permission
 from utils.audit_utils import log_action
+from utils.rbac_helpers import expand_permission_ids_with_access
+from utils.permission_utils import MODULE_DEFINITIONS
+from utils.role_catalog import canonical_code_for_role
 
 role_bp = Blueprint("role", __name__, url_prefix="/roles")
 
@@ -147,13 +150,17 @@ def edit_permissions(role_id):
     Cập nhật quyền theo pattern 2-khối (DB + log).
     """
     role = Role.query.get_or_404(role_id)
-    modules = Module.query.all()
-    all_permissions = Permission.query.all()
+    code = canonical_code_for_role(role)
+    if code and role.RoleName.strip().lower() != code and "[LEGACY]" in (role.Description or ""):
+        flash("⚠️ Vai trò legacy đã gộp. Hãy chỉnh quyền trên vai trò chuẩn tương ứng.", "warning")
+    modules = Module.query.order_by(Module.ModuleID).all()
+    modules = sorted(modules, key=lambda m: list(MODULE_DEFINITIONS.keys()).index(m.ModuleCode) if m.ModuleCode in MODULE_DEFINITIONS else 99)
+    all_permissions = Permission.query.order_by(Permission.ModuleID, Permission.Action).all()
     current_permissions = RolePermission.query.filter_by(RoleID=role.RoleID).all()
     current_ids = [rp.PermissionID for rp in current_permissions]
 
     if request.method == "POST":
-        selected = request.form.getlist("permissions")
+        selected = expand_permission_ids_with_access(request.form.getlist("permissions"))
 
         # Lưu sẵn tên để dùng trong logging
         safe_name = role.RoleName
@@ -191,8 +198,17 @@ def edit_permissions(role_id):
         flash("✅ Đã cập nhật quyền cho vai trò!", "success")
         return redirect(url_for("role.list_roles"))
 
+    from utils.rbac_helpers import permissions_by_module_action
+
+    perm_map = permissions_by_module_action(all_permissions)
     return render_template(
-        "roles/permissions.html", role=role, modules=modules, all_permissions=all_permissions, current_ids=current_ids
+        "roles/permissions.html",
+        role=role,
+        modules=modules,
+        all_permissions=all_permissions,
+        perm_map=perm_map,
+        action_order=("access", "read", "create", "update", "delete"),
+        current_ids=current_ids,
     )
 
 

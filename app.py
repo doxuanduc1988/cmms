@@ -62,8 +62,6 @@ from routes.job_positions import job_position_bp
 # --- Phân quyền ---
 from routes.roles import role_bp
 from routes.permissions import permission_bp
-from routes.permission_manage_route import permission_manage_bp
-
 # --- Audit ---
 from routes.audit import audit_bp
 
@@ -193,7 +191,6 @@ _blueprints = [
     # Phân quyền
     role_bp,
     permission_bp,
-    permission_manage_bp,
     module_bp,
     # Audit
     audit_bp,

@@ -8,6 +8,7 @@ from extensions import db
 from utils.permission_utils import check_permission
 from utils.audit_utils import log_action
 from utils.password_utils import hash_password  # dùng cùng cơ chế login
+from utils.role_catalog import get_assignable_roles, resolve_role_ids_to_canonical
 
 employee_bp = Blueprint("employee", __name__, url_prefix="/employees")
 
@@ -55,8 +56,7 @@ def create_employee():
         # ✅ Gán nhiều vai trò
         role_ids = request.form.getlist("RoleIDs")
         if role_ids:
-            roles = Role.query.filter(Role.RoleID.in_(role_ids)).all()
-            new_emp.roles = roles
+            new_emp.roles = resolve_role_ids_to_canonical(role_ids)
 
         db.session.add(new_emp)
         db.session.commit()
@@ -70,7 +70,7 @@ def create_employee():
         flash("Đã tạo tài khoản mới", "success")
         return redirect(url_for("employee.list_employees"))
 
-    roles = Role.query.all()
+    roles = get_assignable_roles()
     departments = Department.query.all()
     return render_template("employees/create.html", roles=roles, departments=departments)
 
@@ -89,16 +89,23 @@ def edit_employee(employee_id):
 
         # ✅ Cập nhật nhiều vai trò
         role_ids = request.form.getlist("RoleIDs")
-        roles = Role.query.filter(Role.RoleID.in_(role_ids)).all()
-        emp.roles = roles
+        emp.roles = resolve_role_ids_to_canonical(role_ids)
 
         db.session.commit()
         flash("Đã cập nhật thông tin nhân viên", "success")
         return redirect(url_for("employee.list_employees"))
 
-    roles = Role.query.all()
+    roles = get_assignable_roles()
     departments = Department.query.all()
-    return render_template("employees/edit.html", emp=emp, roles=roles, departments=departments)
+    canonical = resolve_role_ids_to_canonical([r.RoleID for r in emp.roles])
+    emp_canonical_role_ids = [r.RoleID for r in canonical]
+    return render_template(
+        "employees/edit.html",
+        emp=emp,
+        roles=roles,
+        departments=departments,
+        emp_canonical_role_ids=emp_canonical_role_ids,
+    )
 
 
 # Xoá nhân viên

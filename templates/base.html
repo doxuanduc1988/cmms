@@ -105,38 +105,50 @@
             </a>
 
             <div class="menu-label">Operations</div>
+            {% if has_module_access('hr') %}
             <a href="/dashboard/hr"
-                class="menu-item {% if '/hr' in request.path or '/employees' in request.path %}active{% endif %}">
+                class="menu-item {% if '/hr' in request.path %}active{% endif %}">
                 <i class="fas fa-user-group"></i>
                 <span>Nhân sự & Hồ sơ</span>
             </a>
+            {% endif %}
 
+            {% if has_module_access('attendance') %}
             <a href="/dashboard/attendance" class="menu-item {% if '/attendance' in request.path %}active{% endif %}">
                 <i class="fas fa-calendar-check"></i>
                 <span>Chấm công & Phê duyệt</span>
             </a>
+            {% endif %}
 
+            {% if has_module_access('estimation') %}
             <a href="/estimation/" class="menu-item {% if '/estimation' in request.path %}active{% endif %}">
                 <i class="fas fa-calculator"></i>
                 <span>Dự toán Chi phí</span>
             </a>
+            {% endif %}
 
+            {% if has_module_access('procurement') %}
             <a href="/procurement/" class="menu-item {% if '/procurement' in request.path %}active{% endif %}">
                 <i class="fas fa-cart-shopping"></i>
                 <span>Mua sắm - Đấu thầu</span>
             </a>
+            {% endif %}
 
+            {% if has_module_access('system_admin') or has_permission('system_admin', 'read') %}
             <div class="menu-label">System Management</div>
             <a href="/dashboard/accounts"
-                class="menu-item {% if '/accounts' in request.path or '/roles' in request.path %}active{% endif %}">
+                class="menu-item {% if '/accounts' in request.path or '/roles' in request.path or '/permissions' in request.path or '/employees' in request.path %}active{% endif %}">
                 <i class="fas fa-shield-halved"></i>
                 <span>Hệ thống & Quyền</span>
             </a>
+            {% endif %}
 
-            <a href="/procurement/logs" class="menu-item {% if '/procurement/logs' in request.path %}active{% endif %}">
+            {% if has_permission('system_admin', 'read') %}
+            <a href="/audit/logs" class="menu-item {% if '/audit' in request.path %}active{% endif %}">
                 <i class="fas fa-list-check"></i>
                 <span>Nhật ký thao tác</span>
             </a>
+            {% endif %}
         </nav>
 
         <div class="p-4 mt-auto">

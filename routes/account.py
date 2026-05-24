@@ -12,6 +12,7 @@ from models.hr.employee_model import Employee
 from models.roles import Role
 from utils.password_utils import check_password, hash_password
 from utils.permission_utils import check_permission
+from utils.role_catalog import get_assignable_roles, resolve_role_ids_to_canonical
 
 account_bp = Blueprint("account", __name__, url_prefix="/accounts")
 
@@ -32,7 +33,7 @@ def list_accounts():
 @login_required
 @check_permission("system_admin", "create")
 def create_account():
-    roles = Role.query.all()
+    roles = get_assignable_roles()
     if request.method == "POST":
         new_emp = Employee(
             EmployeeID=request.form["EmployeeID"],
@@ -45,7 +46,7 @@ def create_account():
         )
         role_ids = request.form.getlist("RoleIDs")
         if role_ids:
-            new_emp.roles = Role.query.filter(Role.RoleID.in_(role_ids)).all()
+            new_emp.roles = resolve_role_ids_to_canonical(role_ids)
         db.session.add(new_emp)
         db.session.commit()
         flash("✅ Đã tạo tài khoản mới", "success")
